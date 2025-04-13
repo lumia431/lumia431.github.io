@@ -4,14 +4,22 @@
   <meta charset="utf-8">
   
   
-  <title>码小虎的博客</title>
+  <title>从零实现响应式框架——CMakeLists实现 | 码小虎的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="码小虎的博客">
-<meta property="og:url" content="http://example.com/index.html">
+  <meta name="description" content="从零实现 CMakeLists：构建 C++ 项目的完整步骤CMake 是一个非常强大的构建工具，广泛应用于 C++ 项目的构建、测试、安装和包管理。本文将通过从零开始的方式，带领大家实现一个 CMakeLists 文件，并解释每一行代码的含义与作用。通过这篇文章，你将学会如何创建一个适用于 C++20 项目的 CMake 构建配置，并理解如何通过 CMake 管理源文件、库、测试以及安装过程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从零实现响应式框架——CMakeLists实现">
+<meta property="og:url" content="http://example.com/2025/04/12/CMakeLists%E5%AE%9E%E7%8E%B0/index.html">
 <meta property="og:site_name" content="码小虎的博客">
+<meta property="og:description" content="从零实现 CMakeLists：构建 C++ 项目的完整步骤CMake 是一个非常强大的构建工具，广泛应用于 C++ 项目的构建、测试、安装和包管理。本文将通过从零开始的方式，带领大家实现一个 CMakeLists 文件，并解释每一行代码的含义与作用。通过这篇文章，你将学会如何创建一个适用于 C++20 项目的 CMake 构建配置，并理解如何通过 CMake 管理源文件、库、测试以及安装过程。">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-04-12T15:03:53.216Z">
+<meta property="article:modified_time" content="2025-04-13T14:21:18.156Z">
 <meta property="article:author" content="码小虎">
+<meta property="article:tag" content="Reactive-programming">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="Modern-Cpp">
+<meta property="article:tag" content="TMP">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="码小虎的博客" type="application/atom+xml">
@@ -69,9 +77,7 @@
 </header>
 
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-CMakeLists实现" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-CMakeLists实现" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2025/04/12/CMakeLists%E5%AE%9E%E7%8E%B0/" class="article-date">
   <time class="dt-published" datetime="2025-04-12T15:03:53.216Z" itemprop="datePublished">2025-04-12</time>
@@ -88,8 +94,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2025/04/12/CMakeLists%E5%AE%9E%E7%8E%B0/">从零实现响应式框架——CMakeLists实现</a>
+    <h1 class="p-name article-title" itemprop="headline name">
+      从零实现响应式框架——CMakeLists实现
     </h1>
   
 
@@ -198,148 +204,19 @@
     </footer>
   </div>
   
-</article>
-
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-Reaction响应式框架介绍" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2025/04/12/Reaction%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D/" class="article-date">
-  <time class="dt-published" datetime="2025-04-12T13:05:45.491Z" itemprop="datePublished">2025-04-12</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Reaction/">Reaction</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2025/04/12/Reaction%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D/">从零实现响应式框架——基本概念和设计思路</a>
-    </h1>
+    <a href="/2025/04/12/Reaction%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">从零实现响应式框架——基本概念和设计思路</div>
+    </a>
   
+</nav>
 
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h1 id="走进响应式编程：从理念到-C-20-实现-——-Reaction-响应式框架介绍"><a href="#走进响应式编程：从理念到-C-20-实现-——-Reaction-响应式框架介绍" class="headerlink" title="走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍"></a>走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍</h1><p>在软件开发中，响应式编程正逐步成为构建数据驱动应用的一种主流范式。本文将带你了解响应式编程的基本理念，比较市面上多语言响应式框架的优劣，并阐述为什么在 C++20 环境下实现响应式编程尤为必要。随后，我们将对 Reaction 响应式框架的整体思路和设计方案进行探讨。</p>
-<hr>
-<h2 id="1-什么是响应式编程？"><a href="#1-什么是响应式编程？" class="headerlink" title="1. 什么是响应式编程？"></a>1. 什么是响应式编程？</h2><p>响应式编程是一种编程模式，其核心在于构建数据流和自动更新依赖关系。当底层数据发生变化时，系统能自动重新计算和刷新所有依赖于该数据的部分，从而减少手动更新的麻烦。这种模式不仅能大幅降低代码耦合性，还能提升应用的实时性和交互体验。</p>
-<h3 id="1-1-响应式编程的基本概念"><a href="#1-1-响应式编程的基本概念" class="headerlink" title="1.1 响应式编程的基本概念"></a>1.1 响应式编程的基本概念</h3><ul>
-<li><strong>数据流（Data Flow）</strong>：将数据看作一连串的变化序列，数据更新后自动传播给所有依赖者。</li>
-<li><strong>依赖追踪（Dependency Tracking）</strong>：系统自动记录和追踪各数据之间的关系，一旦数据变化便触发相关操作。</li>
-<li><strong>声明式编程（Declarative Programming）</strong>：开发者只需声明数据之间的关系，而无需显式控制更新逻辑，框架会负责“自动连接”数据流与视图更新。</li>
-</ul>
-<hr>
-<h2 id="2-市面上各种响应式框架的优劣比较"><a href="#2-市面上各种响应式框架的优劣比较" class="headerlink" title="2. 市面上各种响应式框架的优劣比较"></a>2. 市面上各种响应式框架的优劣比较</h2><p>目前，响应式框架在不同语言生态中都有所布局，每种实现都有其独特优势和侧重点。</p>
-<h3 id="2-1-JavaScript-TypeScript"><a href="#2-1-JavaScript-TypeScript" class="headerlink" title="2.1 JavaScript&#x2F;TypeScript"></a>2.1 JavaScript&#x2F;TypeScript</h3><ul>
-<li><p><strong>RxJS</strong>：  </p>
-<ul>
-<li><strong>优点</strong>：拥有非常丰富的操作符，支持复杂的事件流处理和异步数据流组合。  </li>
-<li><strong>缺点</strong>：学习曲线陡峭，操作符链条复杂，调试困难。</li>
-</ul>
-</li>
-<li><p><strong>Vue.js &#x2F; React</strong>：  </p>
-<ul>
-<li><strong>优点</strong>：通过响应式数据绑定实现 UI 自动更新，极大简化了前端开发。  </li>
-<li><strong>缺点</strong>：框架内部封装较多，调试底层响应式数据流时可能会遇到封装抽象带来的不透明性。</li>
-</ul>
-</li>
-</ul>
-<h3 id="2-2-Java"><a href="#2-2-Java" class="headerlink" title="2.2 Java"></a>2.2 Java</h3><ul>
-<li><strong>Reactor &#x2F; RxJava</strong>：  <ul>
-<li><strong>优点</strong>：功能强大、扩展性高，适用于大规模分布式系统和后端服务。  </li>
-<li><strong>缺点</strong>：设计较为复杂，性能开销相对较大，使用上门槛较高。</li>
-</ul>
-</li>
-</ul>
-<h3 id="2-3-C"><a href="#2-3-C" class="headerlink" title="2.3 C#"></a>2.3 C#</h3><ul>
-<li><strong>Reactive Extensions (Rx.NET)</strong>：  <ul>
-<li><strong>优点</strong>：语法简洁，集成良好，易于在异步编程场景中使用。  </li>
-<li><strong>缺点</strong>：资源管理需特别注意，且在某些高性能场景下可能不如低级语言优化得彻底。</li>
-</ul>
-</li>
-</ul>
-<h3 id="2-4-C-响应式库"><a href="#2-4-C-响应式库" class="headerlink" title="2.4 C++ 响应式库"></a>2.4 C++ 响应式库</h3><ul>
-<li><p><strong>RxCpp</strong>：  </p>
-<ul>
-<li><strong>优点</strong>：提供了全面的响应式 API，支持丰富的操作符和流式计算。  </li>
-<li><strong>缺点</strong>：设计上较为通用，在简单的 UI 状态管理中，复杂的模板机制和操作符链条可能显得冗余和难以维护。</li>
-</ul>
-</li>
-<li><p><strong>其他试验性库（如 Bacon++）</strong>：  </p>
-<ul>
-<li><strong>优点</strong>：早期尝试提供响应式模型。  </li>
-<li><strong>缺点</strong>：维护较少、生态及文档支持不足，稳定性和性能难以保证。</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2 id="3-为什么在-C-20-下实现响应式编程？"><a href="#3-为什么在-C-20-下实现响应式编程？" class="headerlink" title="3. 为什么在 C++20 下实现响应式编程？"></a>3. 为什么在 C++20 下实现响应式编程？</h2><p>随着 C++20 标准的普及，C++ 开发者迎来了大量新特性：</p>
-<ul>
-<li><strong>概念（Concepts）与 constexpr</strong>：编译期类型检查和部分计算能力的提升，使得开发者能在编译期间捕捉错误，减少运行时开销。</li>
-<li><strong>模板元编程增强</strong>：使得实现零成本抽象成为可能，通过编译期计算构建依赖图，从而极大降低运行时成本。</li>
-<li><strong>模块化支持</strong>：更好地管理代码依赖和编译时间，提升大型项目的开发效率。</li>
-</ul>
-<p>在 C++20 环境下实现响应式编程，可以充分发挥这些新特性，打造一个编译期友好、类型安全、且高性能的响应式框架。对于需要频繁更新 UI 状态、处理复杂依赖关系的高性能应用而言，这是一个必然趋势。</p>
-<hr>
-<h2 id="4-Reaction-响应式框架-——-思路与整体设计"><a href="#4-Reaction-响应式框架-——-思路与整体设计" class="headerlink" title="4. Reaction 响应式框架 —— 思路与整体设计"></a>4. Reaction 响应式框架 —— 思路与整体设计</h2><p>Reaction 框架从零开始构建，秉持“轻量、简洁、高效”的理念，主要分为以下模块：</p>
-<h3 id="4-1-核心-API"><a href="#4-1-核心-API" class="headerlink" title="4.1 核心 API"></a>4.1 核心 API</h3><ul>
-<li><p><strong>Reactive Variables (<code>var</code>)</strong><br>提供声明式的变量绑定，支持直接赋值（<code>*a = value</code>）和方法赋值（<code>a.value(...)</code>），既易用又高效。</p>
-</li>
-<li><p><strong>Derived Computation (<code>calc</code> 和 <code>expr</code>)</strong><br>用来构建依赖于一个或多个 <code>var</code> 的计算表达式。<code>calc</code> 采用 Lambda 及参数绑定方式实现高效计算，而 <code>expr</code> 提供更简洁的声明式表达方法。</p>
-</li>
-<li><p><strong>Reactive Actions (<code>action</code>)</strong><br>为副作用操作建立自动响应机制，当依赖数据变化时自动触发相关操作（例如 UI 更新、日志记录等）。</p>
-</li>
-<li><p><strong>Reactive Struct Fields (<code>Field</code>)</strong><br>针对复杂数据结构，提供类似“局部响应式变量”功能，可对结构体的每个字段单独维护响应式状态。</p>
-</li>
-</ul>
-<h3 id="4-2-智能依赖与触发策略"><a href="#4-2-智能依赖与触发策略" class="headerlink" title="4.2 智能依赖与触发策略"></a>4.2 智能依赖与触发策略</h3><ul>
-<li><p><strong>依赖自动追踪</strong><br>自动构建编译期依赖图（DAG），在数据变化时，仅更新真正受影响的计算节点。</p>
-</li>
-<li><p><strong>多种触发策略</strong><br>内置 ValueChangeTrigger、ThresholdTrigger、AlwaysTrigger 等多种更新模式，让开发者能对计算时机进行精细控制。</p>
-</li>
-<li><p><strong>失效策略</strong><br>当依赖失效时，框架支持 DirectFailure、KeepCalculate、UseLastValidValue 三种策略，从而兼顾数据正确性和 UI 连贯性。</p>
-</li>
-</ul>
-<h3 id="4-3-设计优势"><a href="#4-3-设计优势" class="headerlink" title="4.3 设计优势"></a>4.3 设计优势</h3><ul>
-<li><p><strong>零运行时开销</strong><br>充分利用 C++20 新特性在编译期完成大量计算，确保运行时仅留下必要的更新逻辑。</p>
-</li>
-<li><p><strong>类型安全和易维护性</strong><br>通过 C++20 概念及模板重构，确保 API 使用中类型安全，并降低开发者出错风险。</p>
-</li>
-<li><p><strong>专注于 UI 状态管理</strong><br>与传统的信号槽机制不同，Reaction 框架以数据流和依赖追踪为核心，天然适合快速响应、频繁更新的 UI 开发需求。</p>
-</li>
-</ul>
-<hr>
-<h2 id="5-总结"><a href="#5-总结" class="headerlink" title="5. 总结"></a>5. 总结</h2><p>响应式编程正在引领软件开发的革新，从 JavaScript 到 C# 已经有成熟实现，而在 C++ 中，则一直缺少一个既高效又简洁的响应式框架。借助 C++20 的新能力，Reaction 框架力求为 C++ 开发者带来一种全新的思维方式和高性能实现，尤其适用于 UI 状态管理和复杂数据流处理场景。</p>
-<p><strong>本篇文章将带着大家从零开始基于 C++20 实现一个响应式框架</strong>，深入探讨如何通过现代 C++ 的新特性实现高效、灵活的响应式数据流和依赖管理。欢迎关注后续章节，一同探索实现细节！</p>
-<hr>
-<p><em>欢迎在评论区留下你的见解，或者关注 GitHub 项目获取更多信息！</em></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2025/04/12/Reaction%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D/" data-id="cm9e9088i0000iikyc9pu2b4s" data-title="从零实现响应式框架——基本概念和设计思路" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Modern-Cpp/" rel="tag">Modern-Cpp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reactive-programming/" rel="tag">Reactive-programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TMP/" rel="tag">TMP</a></li></ul>
-
-    </footer>
-  </div>
   
 </article>
-
-
-
-  
 
 
 </section>
