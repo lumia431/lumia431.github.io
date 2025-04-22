@@ -6,15 +6,15 @@
   
   <title>从零实现响应式框架——基本概念和设计思路 | 码小虎的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍在软件开发中，响应式编程正逐步成为构建数据驱动应用的一种主流范式。本文将带你了解响应式编程的基本理念，比较市面上多语言响应式框架的优劣，并阐述为什么在 C++20 环境下实现响应式编程尤为必要。随后，我们将对 Reaction 响应式框架的整体思路和设计方案进行探讨。  1. 什么是响应式编程？响应式编程是一种编程模">
+  <meta name="description" content="走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍在现代软件开发中，响应式编程正逐步成为构建数据驱动应用的重要范式。本文将带你深入了解响应式编程的核心理念，比较当前主流响应式框架的优劣，并探讨为何在 C++20 环境下实现响应式框架尤为必要。随后，我们将介绍 Reaction 框架的整体设计思路与架构布局。  🎯 本教程面向谁？本教程适合以下人群阅读：  具备 C">
 <meta property="og:type" content="article">
 <meta property="og:title" content="从零实现响应式框架——基本概念和设计思路">
 <meta property="og:url" content="http://example.com/2025/04/12/Reaction%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D/index.html">
 <meta property="og:site_name" content="码小虎的博客">
-<meta property="og:description" content="走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍在软件开发中，响应式编程正逐步成为构建数据驱动应用的一种主流范式。本文将带你了解响应式编程的基本理念，比较市面上多语言响应式框架的优劣，并阐述为什么在 C++20 环境下实现响应式编程尤为必要。随后，我们将对 Reaction 响应式框架的整体思路和设计方案进行探讨。  1. 什么是响应式编程？响应式编程是一种编程模">
+<meta property="og:description" content="走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍在现代软件开发中，响应式编程正逐步成为构建数据驱动应用的重要范式。本文将带你深入了解响应式编程的核心理念，比较当前主流响应式框架的优劣，并探讨为何在 C++20 环境下实现响应式框架尤为必要。随后，我们将介绍 Reaction 框架的整体设计思路与架构布局。  🎯 本教程面向谁？本教程适合以下人群阅读：  具备 C">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-04-12T13:05:45.491Z">
-<meta property="article:modified_time" content="2025-04-13T14:20:56.024Z">
+<meta property="article:modified_time" content="2025-04-22T07:33:36.234Z">
 <meta property="article:author" content="码小虎">
 <meta property="article:tag" content="Reactive-programming">
 <meta property="article:tag" content="C++">
@@ -103,99 +103,119 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="走进响应式编程：从理念到-C-20-实现-——-Reaction-响应式框架介绍"><a href="#走进响应式编程：从理念到-C-20-实现-——-Reaction-响应式框架介绍" class="headerlink" title="走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍"></a>走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍</h1><p>在软件开发中，响应式编程正逐步成为构建数据驱动应用的一种主流范式。本文将带你了解响应式编程的基本理念，比较市面上多语言响应式框架的优劣，并阐述为什么在 C++20 环境下实现响应式编程尤为必要。随后，我们将对 Reaction 响应式框架的整体思路和设计方案进行探讨。</p>
+        <h1 id="走进响应式编程：从理念到-C-20-实现-——-Reaction-响应式框架介绍"><a href="#走进响应式编程：从理念到-C-20-实现-——-Reaction-响应式框架介绍" class="headerlink" title="走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍"></a>走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍</h1><p>在现代软件开发中，响应式编程正逐步成为构建数据驱动应用的重要范式。本文将带你深入了解响应式编程的核心理念，比较当前主流响应式框架的优劣，并探讨为何在 C++20 环境下实现响应式框架尤为必要。随后，我们将介绍 Reaction 框架的整体设计思路与架构布局。</p>
 <hr>
-<h2 id="1-什么是响应式编程？"><a href="#1-什么是响应式编程？" class="headerlink" title="1. 什么是响应式编程？"></a>1. 什么是响应式编程？</h2><p>响应式编程是一种编程模式，其核心在于构建数据流和自动更新依赖关系。当底层数据发生变化时，系统能自动重新计算和刷新所有依赖于该数据的部分，从而减少手动更新的麻烦。这种模式不仅能大幅降低代码耦合性，还能提升应用的实时性和交互体验。</p>
-<h3 id="1-1-响应式编程的基本概念"><a href="#1-1-响应式编程的基本概念" class="headerlink" title="1.1 响应式编程的基本概念"></a>1.1 响应式编程的基本概念</h3><ul>
-<li><strong>数据流（Data Flow）</strong>：将数据看作一连串的变化序列，数据更新后自动传播给所有依赖者。</li>
-<li><strong>依赖追踪（Dependency Tracking）</strong>：系统自动记录和追踪各数据之间的关系，一旦数据变化便触发相关操作。</li>
-<li><strong>声明式编程（Declarative Programming）</strong>：开发者只需声明数据之间的关系，而无需显式控制更新逻辑，框架会负责“自动连接”数据流与视图更新。</li>
+<h2 id="🎯-本教程面向谁？"><a href="#🎯-本教程面向谁？" class="headerlink" title="🎯 本教程面向谁？"></a>🎯 本教程面向谁？</h2><p>本教程适合以下人群阅读：</p>
+<ul>
+<li><strong>具备 C++ 基础的开发者</strong>：希望通过实战提升对语言本身的理解，掌握更现代的 C++20 编程范式。</li>
+<li><strong>对现代 C++ 感兴趣的学习者</strong>：希望学习 Concepts、constexpr、模板元编程等特性在工程中的实际用法。</li>
+<li><strong>正在求职或准备面试的 C++ 开发者</strong>：通过构建完整框架提升项目能力，积累可展示的实战经验。</li>
+<li><strong>希望了解响应式编程原理的人</strong>：尤其是在 Vue、React 等前端框架中有相关经验，想了解背后机制在 C++ 中的实现方式。</li>
 </ul>
+<p>如果你希望从零构建一个现代化、类型安全、高性能的响应式框架，那么这份系列教程将为你提供系统的思路与代码支撑。</p>
 <hr>
-<h2 id="2-市面上各种响应式框架的优劣比较"><a href="#2-市面上各种响应式框架的优劣比较" class="headerlink" title="2. 市面上各种响应式框架的优劣比较"></a>2. 市面上各种响应式框架的优劣比较</h2><p>目前，响应式框架在不同语言生态中都有所布局，每种实现都有其独特优势和侧重点。</p>
-<h3 id="2-1-JavaScript-TypeScript"><a href="#2-1-JavaScript-TypeScript" class="headerlink" title="2.1 JavaScript&#x2F;TypeScript"></a>2.1 JavaScript&#x2F;TypeScript</h3><ul>
-<li><p><strong>RxJS</strong>：  </p>
-<ul>
-<li><strong>优点</strong>：拥有非常丰富的操作符，支持复杂的事件流处理和异步数据流组合。  </li>
-<li><strong>缺点</strong>：学习曲线陡峭，操作符链条复杂，调试困难。</li>
-</ul>
+<h2 id="1-什么是响应式编程？"><a href="#1-什么是响应式编程？" class="headerlink" title="1. 什么是响应式编程？"></a>1. 什么是响应式编程？</h2><p>响应式编程是一种以“数据驱动视图”和“自动更新”为核心的编程范式。其目标是当底层数据发生变化时，系统能够自动刷新所有依赖于该数据的部分，从而避免繁琐的手动更新逻辑，提升系统的实时性、稳定性和维护性。</p>
+<h3 id="1-1-基本概念"><a href="#1-1-基本概念" class="headerlink" title="1.1 基本概念"></a>1.1 基本概念</h3><ul>
+<li><p><strong>数据流（Data Flow）</strong><br>将数据视作一系列随时间变化的值流，当某个值更新时，其变化将自动传播到所有依赖者。</p>
 </li>
-<li><p><strong>Vue.js &#x2F; React</strong>：  </p>
-<ul>
-<li><strong>优点</strong>：通过响应式数据绑定实现 UI 自动更新，极大简化了前端开发。  </li>
-<li><strong>缺点</strong>：框架内部封装较多，调试底层响应式数据流时可能会遇到封装抽象带来的不透明性。</li>
-</ul>
+<li><p><strong>依赖追踪（Dependency Tracking）</strong><br>系统自动记录数据之间的依赖关系，确保任何变化都能触发对应更新操作。</p>
 </li>
-</ul>
-<h3 id="2-2-Java"><a href="#2-2-Java" class="headerlink" title="2.2 Java"></a>2.2 Java</h3><ul>
-<li><strong>Reactor &#x2F; RxJava</strong>：  <ul>
-<li><strong>优点</strong>：功能强大、扩展性高，适用于大规模分布式系统和后端服务。  </li>
-<li><strong>缺点</strong>：设计较为复杂，性能开销相对较大，使用上门槛较高。</li>
-</ul>
-</li>
-</ul>
-<h3 id="2-3-C"><a href="#2-3-C" class="headerlink" title="2.3 C#"></a>2.3 C#</h3><ul>
-<li><strong>Reactive Extensions (Rx.NET)</strong>：  <ul>
-<li><strong>优点</strong>：语法简洁，集成良好，易于在异步编程场景中使用。  </li>
-<li><strong>缺点</strong>：资源管理需特别注意，且在某些高性能场景下可能不如低级语言优化得彻底。</li>
-</ul>
-</li>
-</ul>
-<h3 id="2-4-C-响应式库"><a href="#2-4-C-响应式库" class="headerlink" title="2.4 C++ 响应式库"></a>2.4 C++ 响应式库</h3><ul>
-<li><p><strong>RxCpp</strong>：  </p>
-<ul>
-<li><strong>优点</strong>：提供了全面的响应式 API，支持丰富的操作符和流式计算。  </li>
-<li><strong>缺点</strong>：设计上较为通用，在简单的 UI 状态管理中，复杂的模板机制和操作符链条可能显得冗余和难以维护。</li>
-</ul>
-</li>
-<li><p><strong>其他试验性库（如 Bacon++）</strong>：  </p>
-<ul>
-<li><strong>优点</strong>：早期尝试提供响应式模型。  </li>
-<li><strong>缺点</strong>：维护较少、生态及文档支持不足，稳定性和性能难以保证。</li>
-</ul>
+<li><p><strong>声明式编程（Declarative Programming）</strong><br>开发者只需声明“数据之间的关系”，而不必显式编写“如何更新”的逻辑，框架会自动完成这些工作。</p>
 </li>
 </ul>
 <hr>
-<h2 id="3-为什么在-C-20-下实现响应式编程？"><a href="#3-为什么在-C-20-下实现响应式编程？" class="headerlink" title="3. 为什么在 C++20 下实现响应式编程？"></a>3. 为什么在 C++20 下实现响应式编程？</h2><p>随着 C++20 标准的普及，C++ 开发者迎来了大量新特性：</p>
+<h2 id="2-主流响应式框架对比分析"><a href="#2-主流响应式框架对比分析" class="headerlink" title="2. 主流响应式框架对比分析"></a>2. 主流响应式框架对比分析</h2><p>目前在不同编程语言生态中，已经诞生了众多响应式框架。它们各具特色，覆盖前端开发、后端服务乃至系统编程领域。</p>
+<h3 id="2-1-JavaScript-TypeScript-生态"><a href="#2-1-JavaScript-TypeScript-生态" class="headerlink" title="2.1 JavaScript &#x2F; TypeScript 生态"></a>2.1 JavaScript &#x2F; TypeScript 生态</h3><ul>
+<li><p><strong>RxJS</strong></p>
 <ul>
-<li><strong>概念（Concepts）与 constexpr</strong>：编译期类型检查和部分计算能力的提升，使得开发者能在编译期间捕捉错误，减少运行时开销。</li>
-<li><strong>模板元编程增强</strong>：使得实现零成本抽象成为可能，通过编译期计算构建依赖图，从而极大降低运行时成本。</li>
-<li><strong>模块化支持</strong>：更好地管理代码依赖和编译时间，提升大型项目的开发效率。</li>
+<li>优点：操作符丰富，支持异步流组合，适合事件密集型场景。</li>
+<li>缺点：学习曲线陡峭，操作链复杂，调试困难。</li>
 </ul>
-<p>在 C++20 环境下实现响应式编程，可以充分发挥这些新特性，打造一个编译期友好、类型安全、且高性能的响应式框架。对于需要频繁更新 UI 状态、处理复杂依赖关系的高性能应用而言，这是一个必然趋势。</p>
+</li>
+<li><p><strong>Vue.js &#x2F; React</strong></p>
+<ul>
+<li>优点：通过响应式状态管理实现 UI 自动更新，极大简化前端开发。</li>
+<li>缺点：响应机制封装较深，底层调试不易。</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-2-Java-生态"><a href="#2-2-Java-生态" class="headerlink" title="2.2 Java 生态"></a>2.2 Java 生态</h3><ul>
+<li><strong>Reactor &#x2F; RxJava</strong><ul>
+<li>优点：强大的流处理能力，适用于高并发和分布式系统。</li>
+<li>缺点：设计复杂，资源消耗较大，学习成本高。</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-3-C-生态"><a href="#2-3-C-生态" class="headerlink" title="2.3 C# 生态"></a>2.3 C# 生态</h3><ul>
+<li><strong>Rx.NET</strong><ul>
+<li>优点：集成度高、语法简洁，非常适合异步编程。</li>
+<li>缺点：内存管理需谨慎，性能上不及底层语言。</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-4-C-生态"><a href="#2-4-C-生态" class="headerlink" title="2.4 C++ 生态"></a>2.4 C++ 生态</h3><ul>
+<li><p><strong>RxCpp</strong></p>
+<ul>
+<li>优点：API 接近 Rx 系列设计，功能完备，支持复杂流式操作。</li>
+<li>缺点：语法冗长、模板嵌套复杂，难以在简洁场景中高效应用。</li>
+</ul>
+</li>
+<li><p><strong>其他尝试性库（如 Bacon++）</strong></p>
+<ul>
+<li>优点：探索性设计，验证响应式模型在 C++ 中的可行性。</li>
+<li>缺点：社区活跃度低，文档不足，稳定性待提升。</li>
+</ul>
+</li>
+</ul>
 <hr>
-<h2 id="4-Reaction-响应式框架-——-思路与整体设计"><a href="#4-Reaction-响应式框架-——-思路与整体设计" class="headerlink" title="4. Reaction 响应式框架 —— 思路与整体设计"></a>4. Reaction 响应式框架 —— 思路与整体设计</h2><p>Reaction 框架从零开始构建，秉持“轻量、简洁、高效”的理念，主要分为以下模块：</p>
-<h3 id="4-1-核心-API"><a href="#4-1-核心-API" class="headerlink" title="4.1 核心 API"></a>4.1 核心 API</h3><ul>
-<li><p><strong>Reactive Variables (<code>var</code>)</strong><br>提供声明式的变量绑定，支持直接赋值（<code>*a = value</code>）和方法赋值（<code>a.value(...)</code>），既易用又高效。</p>
+<h2 id="3-为什么选择-C-20-来实现响应式框架？"><a href="#3-为什么选择-C-20-来实现响应式框架？" class="headerlink" title="3. 为什么选择 C++20 来实现响应式框架？"></a>3. 为什么选择 C++20 来实现响应式框架？</h2><p>C++20 带来了诸多颠覆性特性，为响应式框架的高效实现奠定了基础：</p>
+<ul>
+<li><p><strong>Concepts 与 constexpr</strong><br>强类型约束和编译期计算能力显著增强，使得类型安全与性能优化并存。</p>
 </li>
-<li><p><strong>Derived Computation (<code>calc</code> 和 <code>expr</code>)</strong><br>用来构建依赖于一个或多个 <code>var</code> 的计算表达式。<code>calc</code> 采用 Lambda 及参数绑定方式实现高效计算，而 <code>expr</code> 提供更简洁的声明式表达方法。</p>
+<li><p><strong>模板元编程能力增强</strong><br>支持更强大的编译期逻辑，能够构建“零运行时成本”的依赖追踪机制。</p>
 </li>
-<li><p><strong>Reactive Actions (<code>action</code>)</strong><br>为副作用操作建立自动响应机制，当依赖数据变化时自动触发相关操作（例如 UI 更新、日志记录等）。</p>
-</li>
-<li><p><strong>Reactive Struct Fields (<code>Field</code>)</strong><br>针对复杂数据结构，提供类似“局部响应式变量”功能，可对结构体的每个字段单独维护响应式状态。</p>
+<li><p><strong>模块化支持</strong><br>提高项目结构清晰度，减少编译依赖与时间成本，有助于大规模架构设计。</p>
 </li>
 </ul>
-<h3 id="4-2-智能依赖与触发策略"><a href="#4-2-智能依赖与触发策略" class="headerlink" title="4.2 智能依赖与触发策略"></a>4.2 智能依赖与触发策略</h3><ul>
-<li><p><strong>依赖自动追踪</strong><br>自动构建编译期依赖图（DAG），在数据变化时，仅更新真正受影响的计算节点。</p>
+<p>借助这些新特性，我们可以打造一个编译期友好、性能卓越、类型安全的响应式框架，填补 C++ 生态在 UI 状态管理和数据依赖表达方面的空白。</p>
+<hr>
+<h2 id="4-Reaction-响应式框架-——-设计理念与结构"><a href="#4-Reaction-响应式框架-——-设计理念与结构" class="headerlink" title="4. Reaction 响应式框架 —— 设计理念与结构"></a>4. Reaction 响应式框架 —— 设计理念与结构</h2><p>Reaction 框架旨在提供一个轻量、简洁、高效的响应式开发工具。其设计分为以下几个关键模块：</p>
+<h3 id="4-1-核心-API-组件"><a href="#4-1-核心-API-组件" class="headerlink" title="4.1 核心 API 组件"></a>4.1 核心 API 组件</h3><ul>
+<li><p><strong>Reactive Variables（<code>var</code>）</strong><br>支持直接赋值（<code>*a = value</code>）与链式方法调用（<code>a.value(...)</code>），提供声明式的数据源管理方式。</p>
 </li>
-<li><p><strong>多种触发策略</strong><br>内置 ValueChangeTrigger、ThresholdTrigger、AlwaysTrigger 等多种更新模式，让开发者能对计算时机进行精细控制。</p>
+<li><p><strong>Derived Computation（<code>calc</code> 与 <code>expr</code>）</strong></p>
+<ul>
+<li><code>calc</code>：基于 Lambda 表达式的懒计算机制，适合复杂依赖组合。</li>
+<li><code>expr</code>：声明式语法糖，更贴近“公式表达”的风格。</li>
+</ul>
 </li>
-<li><p><strong>失效策略</strong><br>当依赖失效时，框架支持 DirectFailure、KeepCalculate、UseLastValidValue 三种策略，从而兼顾数据正确性和 UI 连贯性。</p>
+<li><p><strong>Reactive Actions（<code>action</code>）</strong><br>用于注册副作用操作，如 UI 刷新、日志输出等，在依赖数据变化时自动触发。</p>
+</li>
+<li><p><strong>Reactive Struct Fields（<code>Field</code>）</strong><br>针对结构体字段提供局部响应支持，细粒度追踪每个字段的变化。</p>
+</li>
+</ul>
+<h3 id="4-2-智能依赖与触发机制"><a href="#4-2-智能依赖与触发机制" class="headerlink" title="4.2 智能依赖与触发机制"></a>4.2 智能依赖与触发机制</h3><ul>
+<li><p><strong>依赖追踪与编译期 DAG 构建</strong><br>自动生成有向无环依赖图，仅更新受影响节点，避免不必要的重复计算。</p>
+</li>
+<li><p><strong>多种触发策略</strong><br>内建 <code>ValueChangeTrigger</code>、<code>ThresholdTrigger</code>、<code>AlwaysTrigger</code> 等策略，支持精细化的计算控制。</p>
+</li>
+<li><p><strong>失效处理策略</strong><br>包含 <code>DirectFailure</code>（立即失效）、<code>KeepCalculate</code>（强制更新）、<code>UseLastValidValue</code>（使用上一次有效值）等选项，提升容错能力。</p>
 </li>
 </ul>
 <h3 id="4-3-设计优势"><a href="#4-3-设计优势" class="headerlink" title="4.3 设计优势"></a>4.3 设计优势</h3><ul>
-<li><p><strong>零运行时开销</strong><br>充分利用 C++20 新特性在编译期完成大量计算，确保运行时仅留下必要的更新逻辑。</p>
+<li><p><strong>零运行时成本</strong><br>借助模板和 constexpr，最大程度将计算移至编译期，提升运行时性能。</p>
 </li>
-<li><p><strong>类型安全和易维护性</strong><br>通过 C++20 概念及模板重构，确保 API 使用中类型安全，并降低开发者出错风险。</p>
+<li><p><strong>类型安全</strong><br>全面采用 Concepts 约束和类型推导，保证开发体验的一致性与安全性。</p>
 </li>
-<li><p><strong>专注于 UI 状态管理</strong><br>与传统的信号槽机制不同，Reaction 框架以数据流和依赖追踪为核心，天然适合快速响应、频繁更新的 UI 开发需求。</p>
+<li><p><strong>专注 UI 状态管理</strong><br>相较传统的信号槽机制，Reaction 更适合处理复杂、频繁变化的 UI 场景。</p>
 </li>
 </ul>
 <hr>
-<h2 id="5-总结"><a href="#5-总结" class="headerlink" title="5. 总结"></a>5. 总结</h2><p>响应式编程正在引领软件开发的革新，从 JavaScript 到 C# 已经有成熟实现，而在 C++ 中，则一直缺少一个既高效又简洁的响应式框架。借助 C++20 的新能力，Reaction 框架力求为 C++ 开发者带来一种全新的思维方式和高性能实现，尤其适用于 UI 状态管理和复杂数据流处理场景。</p>
-<p><strong>本篇文章将带着大家从零开始基于 C++20 实现一个响应式框架</strong>，深入探讨如何通过现代 C++ 的新特性实现高效、灵活的响应式数据流和依赖管理。欢迎关注后续章节，一同探索实现细节！</p>
+<h2 id="5-总结与展望"><a href="#5-总结与展望" class="headerlink" title="5. 总结与展望"></a>5. 总结与展望</h2><p>响应式编程正加速向全栈渗透，而 C++ 在此领域尚属“荒原”。Reaction 框架希望借助 C++20 的强大能力，为 C++ 开发者提供一种全新的响应式思维模型，特别是在嵌入式界面、工业软件与复杂状态管理等高性能场景中，具备独特的优势。</p>
+<p><strong>接下来的章节，我们将从零开始实现 Reaction 框架，逐步剖析其设计细节与核心实现逻辑。</strong></p>
+<p>欢迎关注后续内容，一起走进响应式 C++ 的世界！</p>
 <hr>
-<p><em>欢迎在评论区留下你的见解，或者关注 GitHub 项目获取更多信息！</em></p>
+<p><em>如果你对本项目感兴趣，欢迎留言交流，或访问 GitHub 获取源码与进展！</em><br><a target="_blank" rel="noopener" href="https://github.com/lumia431/reaction">https://github.com/lumia431/reaction</a></p>
 
       
     </div>
@@ -212,11 +232,11 @@
     
 <nav id="article-nav">
   
-    <a href="/2025/04/12/CMakeLists%E5%AE%9E%E7%8E%B0/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2025/04/12/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E8%AE%A9%E4%BB%A3%E7%A0%81%E8%B7%91%E8%B5%B7%E6%9D%A5%EF%BC%81%E6%9E%84%E5%BB%BA%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E7%9A%84%E8%B5%B7%E7%82%B9/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          从零实现响应式框架——CMakeLists实现
+          第一章：让代码跑起来！构建响应式框架的起点
         
       </div>
     </a>
@@ -278,7 +298,7 @@
       <ul>
         
           <li>
-            <a href="/2025/04/12/CMakeLists%E5%AE%9E%E7%8E%B0/">从零实现响应式框架——CMakeLists实现</a>
+            <a href="/2025/04/12/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E8%AE%A9%E4%BB%A3%E7%A0%81%E8%B7%91%E8%B5%B7%E6%9D%A5%EF%BC%81%E6%9E%84%E5%BB%BA%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E7%9A%84%E8%B5%B7%E7%82%B9/">第一章：让代码跑起来！构建响应式框架的起点</a>
           </li>
         
           <li>
