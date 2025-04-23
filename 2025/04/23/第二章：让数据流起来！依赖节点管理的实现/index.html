@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>第二章：让数据流起来！依赖节点管理的实现 | Lummy的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="第二章：让数据流起来！依赖节点管理的实现在本章中，我们将实现ObserverNode和ObserverGraph，从而能够正确传播数据源的调用链。 我们的目标是让如下代码成功编译并通过测试： 1234567891011121314auto a &#x3D; reaction::var(1);auto b &#x3D; reaction::var(3.14);EXPECT_EQ(a.get(), 1);EXPECT_E">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第二章：让数据流起来！依赖节点管理的实现">
+<meta property="og:url" content="http://example.com/2025/04/23/%E7%AC%AC%E4%BA%8C%E7%AB%A0%EF%BC%9A%E8%AE%A9%E6%95%B0%E6%8D%AE%E6%B5%81%E8%B5%B7%E6%9D%A5%EF%BC%81%E4%BE%9D%E8%B5%96%E8%8A%82%E7%82%B9%E7%AE%A1%E7%90%86%E7%9A%84%E5%AE%9E%E7%8E%B0/index.html">
+<meta property="og:site_name" content="Lummy的博客">
+<meta property="og:description" content="第二章：让数据流起来！依赖节点管理的实现在本章中，我们将实现ObserverNode和ObserverGraph，从而能够正确传播数据源的调用链。 我们的目标是让如下代码成功编译并通过测试： 1234567891011121314auto a &#x3D; reaction::var(1);auto b &#x3D; reaction::var(3.14);EXPECT_EQ(a.get(), 1);EXPECT_E">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-04-23T08:06:30.263Z">
+<meta property="article:modified_time" content="2025-04-23T10:01:01.758Z">
+<meta property="article:author" content="Lummy">
+<meta property="article:tag" content="Reactive-programming">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="Modern-Cpp">
+<meta property="article:tag" content="TMP">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Lummy的博客" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Lummy的博客</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-第二章：让数据流起来！依赖节点管理的实现" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/04/23/%E7%AC%AC%E4%BA%8C%E7%AB%A0%EF%BC%9A%E8%AE%A9%E6%95%B0%E6%8D%AE%E6%B5%81%E8%B5%B7%E6%9D%A5%EF%BC%81%E4%BE%9D%E8%B5%96%E8%8A%82%E7%82%B9%E7%AE%A1%E7%90%86%E7%9A%84%E5%AE%9E%E7%8E%B0/" class="article-date">
+  <time class="dt-published" datetime="2025-04-23T08:06:30.263Z" itemprop="datePublished">2025-04-23</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Reaction/">Reaction</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      第二章：让数据流起来！依赖节点管理的实现
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="第二章：让数据流起来！依赖节点管理的实现"><a href="#第二章：让数据流起来！依赖节点管理的实现" class="headerlink" title="第二章：让数据流起来！依赖节点管理的实现"></a>第二章：让数据流起来！依赖节点管理的实现</h1><p>在本章中，我们将实现ObserverNode和ObserverGraph，从而能够正确传播数据源的调用链。</p>
+<p>我们的目标是让如下代码成功编译并通过测试：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">3.14</span>);</span><br><span class="line"><span class="built_in">EXPECT_EQ</span>(a.<span class="built_in">get</span>(), <span class="number">1</span>);</span><br><span class="line"><span class="built_in">EXPECT_EQ</span>(b.<span class="built_in">get</span>(), <span class="number">3.14</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> aa, <span class="type">double</span> bb) &#123; <span class="keyword">return</span> aa + bb; &#125;, a, b);</span><br><span class="line"><span class="keyword">auto</span> dds = reaction::<span class="built_in">calc</span>([](<span class="keyword">auto</span> aa, <span class="keyword">auto</span> dsds) &#123; <span class="keyword">return</span> std::<span class="built_in">to_string</span>(aa) + dsds; &#125;, a, ds);</span><br><span class="line"></span><br><span class="line"><span class="built_in">ASSERT_FLOAT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">13.14</span>);</span><br><span class="line"><span class="built_in">EXPECT_EQ</span>(dds.<span class="built_in">get</span>(), <span class="string">&quot;113.140000&quot;</span>);</span><br><span class="line"></span><br><span class="line">a.<span class="built_in">value</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">ASSERT_FLOAT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">23.14</span>);</span><br><span class="line"><span class="built_in">EXPECT_EQ</span>(dds.<span class="built_in">get</span>(), <span class="string">&quot;223.140000&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>众所周知，设计模式中有一个赫赫有名的观察者模式，需要一个容器来存储观察容器<br>但是我们的数据源是任意类型的，那么如何放到一个容器中呢？<br>有两个类型擦除的方法，一个是虚函数，一个是function，我们分别实现一下。</p>
+<p>首先是虚函数的实现：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ObserverNode</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">valueChanged</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">updateObservers</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">    <span class="type">void</span> <span class="title">notify</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;observer : m_observers) &#123;</span><br><span class="line">            observer-&gt;<span class="built_in">valueChanged</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    std::vector&lt;ObserverNode*&gt; m_observers;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/04/23/%E7%AC%AC%E4%BA%8C%E7%AB%A0%EF%BC%9A%E8%AE%A9%E6%95%B0%E6%8D%AE%E6%B5%81%E8%B5%B7%E6%9D%A5%EF%BC%81%E4%BE%9D%E8%B5%96%E8%8A%82%E7%82%B9%E7%AE%A1%E7%90%86%E7%9A%84%E5%AE%9E%E7%8E%B0/" data-id="cm9trkbhx0000psky87dv5oet" data-title="第二章：让数据流起来！依赖节点管理的实现" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Modern-Cpp/" rel="tag">Modern-Cpp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reactive-programming/" rel="tag">Reactive-programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TMP/" rel="tag">TMP</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2025/04/12/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E8%AE%A9%E4%BB%A3%E7%A0%81%E8%B7%91%E8%B5%B7%E6%9D%A5%EF%BC%81%E6%9E%84%E5%BB%BA%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E7%9A%84%E8%B5%B7%E7%82%B9/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">第一章：让代码跑起来！构建响应式框架的起点</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Reaction/">Reaction</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Modern-Cpp/" rel="tag">Modern-Cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Reactive-programming/" rel="tag">Reactive-programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TMP/" rel="tag">TMP</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C++</a> <a href="/tags/Modern-Cpp/" style="font-size: 10px;">Modern-Cpp</a> <a href="/tags/Reactive-programming/" style="font-size: 10px;">Reactive-programming</a> <a href="/tags/TMP/" style="font-size: 10px;">TMP</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/04/">April 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2025/04/23/%E7%AC%AC%E4%BA%8C%E7%AB%A0%EF%BC%9A%E8%AE%A9%E6%95%B0%E6%8D%AE%E6%B5%81%E8%B5%B7%E6%9D%A5%EF%BC%81%E4%BE%9D%E8%B5%96%E8%8A%82%E7%82%B9%E7%AE%A1%E7%90%86%E7%9A%84%E5%AE%9E%E7%8E%B0/">第二章：让数据流起来！依赖节点管理的实现</a>
+          </li>
+        
+          <li>
+            <a href="/2025/04/12/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E8%AE%A9%E4%BB%A3%E7%A0%81%E8%B7%91%E8%B5%B7%E6%9D%A5%EF%BC%81%E6%9E%84%E5%BB%BA%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E7%9A%84%E8%B5%B7%E7%82%B9/">第一章：让代码跑起来！构建响应式框架的起点</a>
+          </li>
+        
+          <li>
+            <a href="/2025/04/12/Reaction%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D/">从零实现响应式框架——基本概念和设计思路</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2025 Lummy<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
