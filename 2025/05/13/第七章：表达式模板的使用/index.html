@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>第七章：表达式模板的使用 | Lummy的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="第七章：表达式模板的使用在实现表达式模板之前，我们先做一些准备工作。 首先实现action之间的依赖，一个action可以触发其他的action： 123456789101112131415161718TEST(ReactionTest, TestAction)&#123;    auto a &#x3D; reaction::var(1);    auto b &#x3D; reaction::var(3.14);">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第七章：表达式模板的使用">
+<meta property="og:url" content="http://example.com/2025/05/13/%E7%AC%AC%E4%B8%83%E7%AB%A0%EF%BC%9A%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A8%A1%E6%9D%BF%E7%9A%84%E4%BD%BF%E7%94%A8/index.html">
+<meta property="og:site_name" content="Lummy的博客">
+<meta property="og:description" content="第七章：表达式模板的使用在实现表达式模板之前，我们先做一些准备工作。 首先实现action之间的依赖，一个action可以触发其他的action： 123456789101112131415161718TEST(ReactionTest, TestAction)&#123;    auto a &#x3D; reaction::var(1);    auto b &#x3D; reaction::var(3.14);">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-05-13T06:40:30.277Z">
+<meta property="article:modified_time" content="2025-05-15T08:39:24.056Z">
+<meta property="article:author" content="Lummy">
+<meta property="article:tag" content="Reactive-programming">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="Modern-Cpp">
+<meta property="article:tag" content="TMP">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Lummy的博客" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Lummy的博客</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-第七章：表达式模板的使用" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/05/13/%E7%AC%AC%E4%B8%83%E7%AB%A0%EF%BC%9A%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A8%A1%E6%9D%BF%E7%9A%84%E4%BD%BF%E7%94%A8/" class="article-date">
+  <time class="dt-published" datetime="2025-05-13T06:40:30.277Z" itemprop="datePublished">2025-05-13</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Reaction/">Reaction</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      第七章：表达式模板的使用
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="第七章：表达式模板的使用"><a href="#第七章：表达式模板的使用" class="headerlink" title="第七章：表达式模板的使用"></a>第七章：表达式模板的使用</h1><p>在实现表达式模板之前，我们先做一些准备工作。</p>
+<p>首先实现action之间的依赖，一个action可以触发其他的action：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(ReactionTest, TestAction)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">3.14</span>);</span><br><span class="line">    <span class="keyword">auto</span> at = reaction::<span class="built_in">action</span>([](<span class="type">int</span> aa, <span class="type">double</span> bb)</span><br><span class="line">                               &#123; std::cout &lt;&lt; <span class="string">&quot;a = &quot;</span> &lt;&lt; aa &lt;&lt; <span class="string">&#x27;\t&#x27;</span> &lt;&lt; <span class="string">&quot;b = &quot;</span> &lt;&lt; bb &lt;&lt; <span class="string">&#x27;\t&#x27;</span>; &#125;, a, b);</span><br><span class="line"></span><br><span class="line">    <span class="type">bool</span> trigger = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">auto</span> att = reaction::<span class="built_in">action</span>([&amp;]([[maybe_unused]] <span class="keyword">auto</span> atat)</span><br><span class="line">                                &#123; trigger = <span class="literal">true</span>; std::cout &lt;&lt; <span class="string">&quot;at trigger &quot;</span> &lt;&lt; std::endl; &#125;, at);</span><br><span class="line"></span><br><span class="line">    trigger = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    a.<span class="built_in">value</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="built_in">EXPECT_TRUE</span>(trigger);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>我们需要对void类型做一个包装：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">VoidWrapper</span></span><br><span class="line">&#123;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">template</span> &lt;&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Resource</span>&lt;VoidWrapper&gt; : <span class="keyword">public</span> ObserverNode</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">VoidWrapper <span class="title">getValue</span><span class="params">()</span> <span class="type">const</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> VoidWrapper&#123;&#125;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后实现数据源的重置：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(ReactionTest, TestReset)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([](<span class="keyword">auto</span> aa, <span class="keyword">auto</span> bb) &#123; <span class="keyword">return</span> aa + bb; &#125;, a, b);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dds = reaction::<span class="built_in">calc</span>([](<span class="keyword">auto</span> aa, <span class="keyword">auto</span> bb) &#123; <span class="keyword">return</span> aa + bb; &#125;, a, b);</span><br><span class="line"></span><br><span class="line">    dds.<span class="built_in">reset</span>([](<span class="keyword">auto</span> aa, <span class="keyword">auto</span> dsds) &#123; <span class="keyword">return</span> aa + dsds; &#125;, a, ds);</span><br><span class="line">    a.<span class="built_in">value</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(dds.<span class="built_in">get</span>(), <span class="number">6</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这里涉及到一个问题，之前我们是用一个tuple来保存形参包的，现在这个形参包的类型和个数会被重置，那么如何保存一个可变的形参包呢？<br>答案是std::function:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Fun, <span class="keyword">typename</span>... Args&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Expression</span> : <span class="keyword">public</span> Resource&lt;ReturnType&lt;Fun, Args...&gt;&gt;</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> ValueType = ReturnType&lt;Fun, Args...&gt;;</span><br><span class="line">    <span class="keyword">using</span> ExprType = CalcExpr;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> F, <span class="keyword">typename</span>... A&gt;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">setSource</span><span class="params">(F &amp;&amp;f, A &amp;&amp;...args)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">if</span> <span class="title">constexpr</span> <span class="params">(std::convertible_to&lt;ReturnType&lt;std::<span class="type">decay_t</span>&lt;F&gt;, std::<span class="type">decay_t</span>&lt;A&gt;...&gt;, ValueType&gt;)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>-&gt;<span class="built_in">updateObservers</span>(std::forward&lt;A&gt;(args)...);</span><br><span class="line"></span><br><span class="line">            <span class="built_in">setFunctor</span>(<span class="built_in">createFun</span>(std::forward&lt;F&gt;(f), std::forward&lt;A&gt;(args)...));</span><br><span class="line"></span><br><span class="line">            <span class="built_in">evaluate</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> F, <span class="keyword">typename</span>... A&gt;</span><br><span class="line">    <span class="function"><span class="keyword">auto</span> <span class="title">createFun</span><span class="params">(F &amp;&amp;f, A &amp;&amp;...args)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> [f = std::forward&lt;F&gt;(f), ...args = args.<span class="built_in">getPtr</span>()]() <span class="comment">// C++20</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">constexpr</span> (VoidType&lt;ValueType&gt;)</span><br><span class="line">            &#123;</span><br><span class="line">                std::<span class="built_in">invoke</span>(f, args-&gt;<span class="built_in">get</span>()...);</span><br><span class="line">                <span class="keyword">return</span> VoidWrapper&#123;&#125;;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">return</span> std::<span class="built_in">invoke</span>(f, args-&gt;<span class="built_in">get</span>()...);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">valueChanged</span><span class="params">()</span> <span class="keyword">override</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="built_in">evaluate</span>();</span><br><span class="line">        <span class="keyword">this</span>-&gt;<span class="built_in">notify</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">evaluate</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">if</span> <span class="title">constexpr</span> <span class="params">(VoidType&lt;ValueType&gt;)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            std::<span class="built_in">invoke</span>(m_fun);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">this</span>-&gt;<span class="built_in">updateValue</span>(std::<span class="built_in">invoke</span>(m_fun));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">setFunctor</span><span class="params">(<span class="type">const</span> std::function&lt;ValueType()&gt; &amp;fun)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        m_fun = fun;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    std::function&lt;ValueType()&gt; m_fun;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后实现()语法糖的封装，实现自动注册：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(ReactionTest, TestParentheses) &#123;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">3.14</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(a.<span class="built_in">get</span>(), <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(b.<span class="built_in">get</span>(), <span class="number">3.14</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="built_in">b</span>(); &#125;);</span><br><span class="line">    <span class="keyword">auto</span> dds = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> std::<span class="built_in">to_string</span>(<span class="built_in">a</span>()) + std::<span class="built_in">to_string</span>(<span class="built_in">ds</span>()); &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">ASSERT_FLOAT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">4.14</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(dds.<span class="built_in">get</span>(), <span class="string">&quot;14.140000&quot;</span>);</span><br><span class="line"></span><br><span class="line">    a.<span class="built_in">value</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="built_in">ASSERT_FLOAT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">5.14</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(dds.<span class="built_in">get</span>(), <span class="string">&quot;25.140000&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> F&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">set</span><span class="params">(F &amp;&amp;f)</span> </span>&#123;</span><br><span class="line">    g_reg_fun = [<span class="keyword">this</span>](NodePtr node) &#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;<span class="built_in">addObCb</span>(node);</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>-&gt;<span class="built_in">setSource</span>(std::forward&lt;F&gt;(f));</span><br><span class="line">    g_reg_fun = <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>最后是表达式模板的封装：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(ReactionTest, TestExpr) &#123;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="keyword">auto</span> c = reaction::<span class="built_in">var</span>(<span class="number">3.14</span>);</span><br><span class="line">    <span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="built_in">b</span>(); &#125;);</span><br><span class="line">    <span class="keyword">auto</span> expr_ds = reaction::<span class="built_in">expr</span>(c + a / b - ds * <span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">    a.<span class="built_in">value</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">4</span>);</span><br><span class="line">    <span class="built_in">ASSERT_FLOAT_EQ</span>(expr_ds.<span class="built_in">get</span>(), <span class="number">-3.86</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="一、表达式模板是什么？"><a href="#一、表达式模板是什么？" class="headerlink" title="一、表达式模板是什么？"></a>一、表达式模板是什么？</h2><p><strong>表达式模板（Expression Template）</strong> 是一种 <strong>延迟求值（Lazy Evaluation）</strong> 技术，通过 C++ 模板和运算符重载，在编译期构建表达式的语法树，然后在需要时一次性计算整个表达式，<strong>避免中间结果的拷贝或临时对象的生成</strong>。</p>
+<p>最早由 Todd Veldhuizen 在处理 C++ 数组库（如 Blitz++）时提出，用于提高性能。</p>
+<hr>
+<h2 id="二、它解决了什么问题？"><a href="#二、它解决了什么问题？" class="headerlink" title="二、它解决了什么问题？"></a>二、它解决了什么问题？</h2><p>举个例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Vector a, b, c, d;</span><br><span class="line">a = b + c + d;</span><br></pre></td></tr></table></figure>
+
+<p>传统实现中，<code>b + c</code> 产生一个临时对象 <code>temp1</code>，然后 <code>temp1 + d</code> 再产生另一个临时对象 <code>temp2</code>，最终赋值给 <code>a</code>，造成了多次内存分配和复制。</p>
+<p>而使用表达式模板，<code>b + c + d</code> 不会立即执行，而是生成一个表达式类型 <code>AddExpr&lt;AddExpr&lt;b, c&gt;, d&gt;</code>，等 <code>a = ...</code> 的时候再统一执行，从而避免了中间变量，提高效率。</p>
+<hr>
+<h2 id="三、基本原理"><a href="#三、基本原理" class="headerlink" title="三、基本原理"></a>三、基本原理</h2><p>核心思想是：</p>
+<ul>
+<li><strong>重载运算符返回表达式类型</strong>（如 <code>+</code> 返回 <code>BinaryOpExpr</code>）</li>
+<li><strong>延迟求值</strong>，即表达式本身只是“记录”结构</li>
+<li><strong>调用时再执行</strong>（如 <code>operator()</code> 或强制类型转换）</li>
+</ul>
+<h3 id="示例结构："><a href="#示例结构：" class="headerlink" title="示例结构："></a>示例结构：</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 原子值包装器</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Value</span> &#123;</span><br><span class="line">    <span class="keyword">using</span> ValueType = T;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">Value</span>(T val) : <span class="built_in">value</span>(val) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">T <span class="title">operator</span><span class="params">()</span><span class="params">()</span> <span class="type">const</span> </span>&#123; <span class="keyword">return</span> value; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">operator</span> <span class="title">T</span><span class="params">()</span> <span class="type">const</span> </span>&#123; <span class="keyword">return</span> value; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    T value;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 表达式类型：二元操作</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Op, <span class="keyword">typename</span> L, <span class="keyword">typename</span> R&gt;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">BinaryOpExpr</span> &#123;</span><br><span class="line">    <span class="keyword">using</span> ValueType = std::<span class="type">common_type_t</span>&lt;<span class="keyword">typename</span> L::ValueType, <span class="keyword">typename</span> R::ValueType&gt;;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">BinaryOpExpr</span>(L l, R r, Op o = Op&#123;&#125;) : <span class="built_in">left</span>(l), <span class="built_in">right</span>(r), <span class="built_in">op</span>(o) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">ValueType <span class="title">operator</span><span class="params">()</span><span class="params">()</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">op</span>(<span class="built_in">left</span>(), <span class="built_in">right</span>());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    L left;</span><br><span class="line">    R right;</span><br><span class="line">    Op op;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 运算符重载</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> L, <span class="keyword">typename</span> R&gt;</span><br><span class="line"><span class="keyword">auto</span> <span class="keyword">operator</span>+(L l, R r) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">BinaryOpExpr</span>&lt;AddOp, L, R&gt;(l, r);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、表达式模板的优点"><a href="#四、表达式模板的优点" class="headerlink" title="四、表达式模板的优点"></a>四、表达式模板的优点</h2><p>✅ <strong>性能优化（零拷贝）</strong><br>✅ <strong>编译期构建计算图</strong><br>✅ <strong>高度可组合</strong><br>✅ <strong>适用于数学类库（矩阵、向量）、响应式编程、DSL 构建等</strong></p>
+<hr>
+<h2 id="五、表达式模板的应用场景"><a href="#五、表达式模板的应用场景" class="headerlink" title="五、表达式模板的应用场景"></a>五、表达式模板的应用场景</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>举例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数值计算</td>
+<td>Blitz++、Eigen、xtensor</td>
+</tr>
+<tr>
+<td>图形编程</td>
+<td>OpenGL DSL、Shader 表达式</td>
+</tr>
+<tr>
+<td>信号处理</td>
+<td>响应式框架：RxCpp、C++ reactive dataflow</td>
+</tr>
+<tr>
+<td>自定义 DSL</td>
+<td>嵌入式编程、财务表达式等</td>
+</tr>
+<tr>
+<td>表达式构建器</td>
+<td>SQL 查询构建、规则引擎</td>
+</tr>
+</tbody></table>
+<p><a target="_blank" rel="noopener" href="https://godbolt.org/z/z4Ye5PqsK">https://godbolt.org/z/z4Ye5PqsK</a></p>
+<hr>
+<p>在 C++ 中，空类（没有任何成员变量或非静态成员函数的类）默认情况下会占用 <strong>1 字节</strong>的内存空间（用于确保不同对象的地址唯一）。但可以通过以下方法去掉或优化其大小：</p>
+<h3 id="使用-no-unique-address-（C-20-引入）"><a href="#使用-no-unique-address-（C-20-引入）" class="headerlink" title="使用 [[no_unique_address]]（C++20 引入）"></a><strong>使用 <code>[[no_unique_address]]</code>（C++20 引入）</strong></h3><ul>
+<li><strong>作用</strong>：允许空成员变量不占用额外空间（如果它是空的）。</li>
+<li><strong>适用场景</strong>：空类作为成员变量时（如空基类、无状态的策略类）。</li>
+<li><strong>示例</strong>：<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Empty</span> &#123;&#125;; <span class="comment">// 空类，默认占 1 字节</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Optimized</span> &#123;</span><br><span class="line">    [[no_unique_address]] Empty e; <span class="comment">// 可能不占用空间（取决于编译器优化）</span></span><br><span class="line">    <span class="type">int</span> x;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">static_assert</span>(<span class="built_in">sizeof</span>(Optimized) == <span class="built_in">sizeof</span>(<span class="type">int</span>)); <span class="comment">// 可能成立</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>注意</strong>：是否真正优化取决于编译器实现和成员布局规则（如 MSVC 可能仍需对齐）。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p><code>std::common_type_t</code> 是 C++11 引入的一个类型萃取工具，用于从多个类型中<strong>推导出它们的公共类型</strong>，即它们能隐式转换到的最“宽泛”的一个类型。</p>
+<h2 id="🧠-基本概念"><a href="#🧠-基本概念" class="headerlink" title="🧠 基本概念"></a>🧠 基本概念</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span>... T&gt;</span><br><span class="line"><span class="keyword">using</span> <span class="type">common_type_t</span> = <span class="keyword">typename</span> std::common_type&lt;T...&gt;::type;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>它是 <code>std::common_type&lt;T...&gt;</code> 的类型别名（简写形式）。</li>
+<li>用于推导多个类型的“<strong>共同类型</strong>”（比如用于运算、返回值、参数统一等场景）。</li>
+</ul>
+<hr>
+<h2 id="✅-示例-1：两个基本类型"><a href="#✅-示例-1：两个基本类型" class="headerlink" title="✅ 示例 1：两个基本类型"></a>✅ 示例 1：两个基本类型</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">std::<span class="type">common_type_t</span>&lt;<span class="type">int</span>, <span class="type">double</span>&gt; x; <span class="comment">// 推导为 double</span></span><br></pre></td></tr></table></figure>
+
+<p>解释：因为 <code>int</code> 可以隐式转换成 <code>double</code>，但 <code>double</code> 不能无损转为 <code>int</code>，所以 <code>double</code> 是更“通用”的类型。</p>
+<hr>
+<h2 id="✅-示例-2：三个类型"><a href="#✅-示例-2：三个类型" class="headerlink" title="✅ 示例 2：三个类型"></a>✅ 示例 2：三个类型</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">std::<span class="type">common_type_t</span>&lt;<span class="type">int</span>, <span class="type">float</span>, <span class="type">double</span>&gt; x; <span class="comment">// 结果是 double</span></span><br></pre></td></tr></table></figure>
+
+<p>解释：<code>int</code>、<code>float</code> 都能隐式转换为 <code>double</code>，所以 <code>double</code> 是最合适的公共类型。</p>
+<hr>
+<h2 id="✅-示例-3：自定义类型"><a href="#✅-示例-3：自定义类型" class="headerlink" title="✅ 示例 3：自定义类型"></a>✅ 示例 3：自定义类型</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">A</span> &#123;&#125;;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">B</span> : A &#123;&#125;;</span><br><span class="line"></span><br><span class="line">std::<span class="type">common_type_t</span>&lt;A, B&gt; obj; <span class="comment">// 推导为 A</span></span><br></pre></td></tr></table></figure>
+
+<p>解释：<code>B</code> 可以转为 <code>A</code>，所以 <code>A</code> 是公共基类型。</p>
+<hr>
+<h2 id="✅-示例-4：结合表达式模板"><a href="#✅-示例-4：结合表达式模板" class="headerlink" title="✅ 示例 4：结合表达式模板"></a>✅ 示例 4：结合表达式模板</h2><p>在表达式模板中，我们通常这样写：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Op, <span class="keyword">typename</span> L, <span class="keyword">typename</span> R&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BinaryOpExpr</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> ValueType = std::<span class="type">common_type_t</span>&lt;<span class="keyword">typename</span> L::ValueType, <span class="keyword">typename</span> R::ValueType&gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>**目的：**如果 <code>L::ValueType</code> 是 <code>int</code>，<code>R::ValueType</code> 是 <code>double</code>，我们就自动推导出 <code>ValueType = double</code>，避免类型不匹配。</p>
+<hr>
+<h2 id="⚠️-注意事项"><a href="#⚠️-注意事项" class="headerlink" title="⚠️ 注意事项"></a>⚠️ 注意事项</h2><ol>
+<li><p><code>std::common_type_t</code> 会考虑 <strong>三元运算符规则</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">std::<span class="type">common_type_t</span>&lt;<span class="type">int</span>, <span class="type">long</span>, <span class="type">float</span>&gt; <span class="comment">// 是 float（因为 int ? long : float 是 float）</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果两个类型没有公共类型（比如你自定义的类型没有相互转换），则会编译失败。</p>
+</li>
+</ol>
+<hr>
+<h2 id="🛠️-实际用途"><a href="#🛠️-实际用途" class="headerlink" title="🛠️ 实际用途"></a>🛠️ 实际用途</h2><ul>
+<li>推导表达式模板的值类型（<code>+</code>、<code>-</code>、<code>*</code> 等）</li>
+<li>函数模板返回值统一</li>
+<li>SFINAE 判断（如果不存在共同类型就不启用函数）</li>
+<li>类型安全统一转换</li>
+</ul>
+<hr>
+<h2 id="🧾-总结表"><a href="#🧾-总结表" class="headerlink" title="🧾 总结表"></a>🧾 总结表</h2><table>
+<thead>
+<tr>
+<th>示例</th>
+<th><code>std::common_type_t&lt;T1, T2&gt;</code> 的结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>int, double</code></td>
+<td><code>double</code></td>
+</tr>
+<tr>
+<td><code>float, double</code></td>
+<td><code>double</code></td>
+</tr>
+<tr>
+<td><code>int, unsigned int</code></td>
+<td><code>unsigned int</code></td>
+</tr>
+<tr>
+<td><code>A, B</code>（B继承自A）</td>
+<td><code>A</code></td>
+</tr>
+<tr>
+<td><code>std::string, const char*</code></td>
+<td><code>std::string</code>（因为 const char* 可转为 string）</td>
+</tr>
+</tbody></table>
+<hr>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Language: Cpp</span><br><span class="line"></span><br><span class="line">AccessModifierOffset: <span class="number">-4</span></span><br><span class="line"></span><br><span class="line">AlignAfterOpenBracket: Align</span><br><span class="line"></span><br><span class="line">AlignConsecutiveAssignments: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">AlignConsecutiveDeclarations: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">AlignEscapedNewlines: Right</span><br><span class="line"></span><br><span class="line">AlignOperands: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">AlignTrailingComments: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">AllowAllParametersOfDeclarationOnNextLine: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">AllowShortBlocksOnASingleLine: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">AllowShortCaseLabelsOnASingleLine: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">AllowShortFunctionsOnASingleLine: None</span><br><span class="line"></span><br><span class="line">AllowShortIfStatementsOnASingleLine: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">AllowShortLoopsOnASingleLine: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">AlwaysBreakAfterReturnType: None</span><br><span class="line"></span><br><span class="line">AlwaysBreakBeforeMultilineStrings: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">AlwaysBreakTemplateDeclarations: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">BinPackArguments: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">BinPackParameters: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">BraceWrapping:</span><br><span class="line">  AfterClass: <span class="literal">false</span></span><br><span class="line">  AfterControlStatement: <span class="literal">false</span></span><br><span class="line">  AfterEnum: <span class="literal">false</span></span><br><span class="line">  AfterFunction: <span class="literal">false</span></span><br><span class="line">  AfterNamespace: <span class="literal">false</span></span><br><span class="line">  AfterStruct: <span class="literal">false</span></span><br><span class="line">  AfterUnion: <span class="literal">false</span></span><br><span class="line">  AfterExternBlock: <span class="literal">false</span></span><br><span class="line">  BeforeCatch: <span class="literal">false</span></span><br><span class="line">  BeforeElse: <span class="literal">false</span></span><br><span class="line">  IndentBraces: <span class="literal">false</span></span><br><span class="line">  SplitEmptyFunction: <span class="literal">false</span></span><br><span class="line">  SplitEmptyRecord: <span class="literal">false</span></span><br><span class="line">  SplitEmptyNamespace: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">BreakBeforeBinaryOperators: NonAssignment</span><br><span class="line"></span><br><span class="line">BreakBeforeBraces: Custom</span><br><span class="line"></span><br><span class="line">BreakBeforeTernaryOperators: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">BreakConstructorInitializers: AfterColon</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">BreakStringLiterals: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">ColumnLimit: <span class="number">0</span></span><br><span class="line"></span><br><span class="line">CompactNamespaces: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">ConstructorInitializerAllOnOneLineOrOnePerLine: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">ConstructorInitializerIndentWidth: <span class="number">4</span></span><br><span class="line"></span><br><span class="line">ContinuationIndentWidth: <span class="number">4</span></span><br><span class="line"></span><br><span class="line">Cpp11BracedListStyle: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">DerivePointerAlignment: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">FixNamespaceComments: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">IndentCaseLabels: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">IndentPPDirectives: None</span><br><span class="line"></span><br><span class="line">IndentWidth: <span class="number">4</span></span><br><span class="line"></span><br><span class="line">IndentWrappedFunctionNames: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">KeepEmptyLinesAtTheStartOfBlocks: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">MaxEmptyLinesToKeep: <span class="number">1</span></span><br><span class="line"></span><br><span class="line">NamespaceIndentation: None</span><br><span class="line"></span><br><span class="line">PointerAlignment: Right</span><br><span class="line"></span><br><span class="line">ReflowComments: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">SortIncludes: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">SortUsingDeclarations: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">SpaceAfterCStyleCast: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">SpaceAfterTemplateKeyword: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">SpaceBeforeAssignmentOperators: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">SpaceBeforeParens: ControlStatements</span><br><span class="line"></span><br><span class="line">SpaceInEmptyParentheses: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">SpacesBeforeTrailingComments: <span class="number">1</span></span><br><span class="line"></span><br><span class="line">SpacesInAngles: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">SpacesInCStyleCastParentheses: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">SpacesInContainerLiterals: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">SpacesInParentheses: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">SpacesInSquareBrackets: <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">Standard: Cpp11</span><br><span class="line"></span><br><span class="line">TabWidth: <span class="number">4</span></span><br><span class="line"></span><br><span class="line">UseTab: Never</span><br><span class="line"></span><br><span class="line">AllowShortRecordsOnASingleLine: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">AllowShortFunctionsOnASingleLine: <span class="literal">true</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/05/13/%E7%AC%AC%E4%B8%83%E7%AB%A0%EF%BC%9A%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A8%A1%E6%9D%BF%E7%9A%84%E4%BD%BF%E7%94%A8/" data-id="cmaphr4vw00002kky9hor7lj1" data-title="第七章：表达式模板的使用" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Modern-Cpp/" rel="tag">Modern-Cpp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reactive-programming/" rel="tag">Reactive-programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TMP/" rel="tag">TMP</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2025/05/09/%E7%AC%AC%E5%85%AD%E7%AB%A0%EF%BC%9A%E7%BC%96%E8%AF%91%E6%9C%9F%E5%8F%8D%E5%B0%84private%E6%88%90%E5%91%98/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">第六章：编译期反射 private 成员</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Reaction/">Reaction</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Modern-Cpp/" rel="tag">Modern-Cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Reactive-programming/" rel="tag">Reactive-programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TMP/" rel="tag">TMP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Reactive-programming-C-Modern-Cpp-TMP/" rel="tag">\[Reactive-programming, C++, Modern-Cpp, TMP]</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 20px;">C++</a> <a href="/tags/Modern-Cpp/" style="font-size: 20px;">Modern-Cpp</a> <a href="/tags/Reactive-programming/" style="font-size: 20px;">Reactive-programming</a> <a href="/tags/TMP/" style="font-size: 20px;">TMP</a> <a href="/tags/Reactive-programming-C-Modern-Cpp-TMP/" style="font-size: 10px;">\[Reactive-programming, C++, Modern-Cpp, TMP]</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/05/">May 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/04/">April 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2025/05/13/%E7%AC%AC%E4%B8%83%E7%AB%A0%EF%BC%9A%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A8%A1%E6%9D%BF%E7%9A%84%E4%BD%BF%E7%94%A8/">第七章：表达式模板的使用</a>
+          </li>
+        
+          <li>
+            <a href="/2025/05/09/%E7%AC%AC%E5%85%AD%E7%AB%A0%EF%BC%9A%E7%BC%96%E8%AF%91%E6%9C%9F%E5%8F%8D%E5%B0%84private%E6%88%90%E5%91%98/">第六章：编译期反射 private 成员</a>
+          </li>
+        
+          <li>
+            <a href="/2025/05/09/%E7%AC%AC%E4%BA%94%E7%AB%A0%EF%BC%9A%E7%BC%96%E8%AF%91%E6%9C%9F%E5%8F%8D%E5%B0%84%E5%88%9D%E6%8E%A2%EF%BC%81%EF%BC%81/">第五章：编译期反射初探！</a>
+          </li>
+        
+          <li>
+            <a href="/2025/05/07/%E7%AC%AC%E4%B8%89%E7%AB%A0%EF%BC%9A%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E6%BA%90%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%AE%A1%E7%90%86/">第三章：实现数据源的生命周期管理</a>
+          </li>
+        
+          <li>
+            <a href="/2025/05/03/%E7%AC%AC%E5%9B%9B%E7%AB%A0%EF%BC%9A%E8%AE%A9%E6%95%B0%E6%8D%AE%E6%BA%90%E4%BD%9C%E4%B8%BA%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F/">第四章：让数据源作为成员变量</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2025 Lummy<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
