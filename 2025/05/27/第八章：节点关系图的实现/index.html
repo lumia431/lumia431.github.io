@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>第八章：节点关系图的实现 | Lummy的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="第八章：节点关系图的实现12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879808182838485868788899091929394TEST(Test">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第八章：节点关系图的实现">
+<meta property="og:url" content="http://example.com/2025/05/27/%E7%AC%AC%E5%85%AB%E7%AB%A0%EF%BC%9A%E8%8A%82%E7%82%B9%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0/index.html">
+<meta property="og:site_name" content="Lummy的博客">
+<meta property="og:description" content="第八章：节点关系图的实现12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879808182838485868788899091929394TEST(Test">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-05-27T08:24:17.383Z">
+<meta property="article:modified_time" content="2025-05-27T08:28:29.576Z">
+<meta property="article:author" content="Lummy">
+<meta property="article:tag" content="Reactive-programming">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="Modern-Cpp">
+<meta property="article:tag" content="TMP">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Lummy的博客" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Lummy的博客</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-第八章：节点关系图的实现" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/05/27/%E7%AC%AC%E5%85%AB%E7%AB%A0%EF%BC%9A%E8%8A%82%E7%82%B9%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0/" class="article-date">
+  <time class="dt-published" datetime="2025-05-27T08:24:17.383Z" itemprop="datePublished">2025-05-27</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Reaction/">Reaction</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      第八章：节点关系图的实现
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="第八章：节点关系图的实现"><a href="#第八章：节点关系图的实现" class="headerlink" title="第八章：节点关系图的实现"></a>第八章：节点关系图的实现</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(TestSelfDependency, ReactionTest) &#123;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="keyword">auto</span> c = reaction::<span class="built_in">var</span>(<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsA = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> aa) &#123; <span class="keyword">return</span> aa; &#125;, a);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(dsA.<span class="built_in">reset</span>([](<span class="type">int</span> aa, <span class="type">int</span> dsAValue) &#123; <span class="keyword">return</span> aa + dsAValue; &#125;, a, dsA),</span><br><span class="line">        reaction::ReactionError::CycleDepErr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(TestCycleDependency, ReactionTest) &#123;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="keyword">auto</span> c = reaction::<span class="built_in">var</span>(<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsA = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> bb) &#123; <span class="keyword">return</span> bb; &#125;, b);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsB = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> cc) &#123; <span class="keyword">return</span> cc; &#125;, c);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsC = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> aa) &#123; <span class="keyword">return</span> aa; &#125;, a);</span><br><span class="line"></span><br><span class="line">    dsA.<span class="built_in">reset</span>([](<span class="type">int</span> bb, <span class="type">int</span> dsBValue) &#123; <span class="keyword">return</span> bb + dsBValue; &#125;, b, dsB);</span><br><span class="line"></span><br><span class="line">    dsB.<span class="built_in">reset</span>([](<span class="type">int</span> cc, <span class="type">int</span> dsCValue) &#123; <span class="keyword">return</span> cc * dsCValue; &#125;, c, dsC);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(dsC.<span class="built_in">reset</span>([](<span class="type">int</span> aa, <span class="type">int</span> dsAValue) &#123; <span class="keyword">return</span> aa - dsAValue; &#125;, a, dsA),</span><br><span class="line">        reaction::ReactionError::CycleDepErr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Test for repeat dependencies and the number of trigger counts</span></span><br><span class="line"><span class="built_in">TEST</span>(TestRepeatDependency, ReactionTest) &#123;</span><br><span class="line">    <span class="comment">// ds → A, ds → a, A → a</span></span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>).<span class="built_in">setName</span>(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>).<span class="built_in">setName</span>(<span class="string">&quot;b&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> triggerCount = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">auto</span> dsA = reaction::<span class="built_in">calc</span>([&amp;]() &#123;</span><br><span class="line">                               ++triggerCount;</span><br><span class="line">                               <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="built_in">b</span>(); &#125;).<span class="built_in">setName</span>(<span class="string">&quot;dsA&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsB = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="built_in">dsA</span>(); &#125;).<span class="built_in">setName</span>(<span class="string">&quot;dsB&quot;</span>);</span><br><span class="line"></span><br><span class="line">    triggerCount = <span class="number">0</span>;</span><br><span class="line">    *a = <span class="number">2</span>;</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCount, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(dsB.<span class="built_in">get</span>(), <span class="number">6</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(TestRepeatDependency2, ReactionTest) &#123;</span><br><span class="line">    <span class="comment">// ds → A, ds → B, ds → C, A → a, B → a</span></span><br><span class="line">    <span class="type">int</span> triggerCountA = <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> triggerCountB = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>).<span class="built_in">setName</span>(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> A = reaction::<span class="built_in">calc</span>([&amp;]() &#123; ++triggerCountA; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;A&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> B = reaction::<span class="built_in">calc</span>([&amp;]() &#123; ++triggerCountB; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="number">2</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;B&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> C = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="number">5</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;C&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">A</span>() + <span class="built_in">B</span>() + <span class="built_in">C</span>(); &#125;).<span class="built_in">setName</span>(<span class="string">&quot;ds&quot;</span>);</span><br><span class="line"></span><br><span class="line">    triggerCountA = <span class="number">0</span>;</span><br><span class="line">    triggerCountB = <span class="number">0</span>;</span><br><span class="line">    *a = <span class="number">2</span>;</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCountA, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCountB, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">12</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(TestRepeatDependency3, ReactionTest) &#123;</span><br><span class="line">    <span class="comment">// ds → A, ds → B, A → A1, A1 → A2, A2 → a, B → B1, B1 → a</span></span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>).<span class="built_in">setName</span>(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">1</span>).<span class="built_in">setName</span>(<span class="string">&quot;b&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> triggerCountA = <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> triggerCountB = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">auto</span> A2 = reaction::<span class="built_in">calc</span>([&amp;]() &#123; ++triggerCountA; <span class="keyword">return</span> <span class="built_in">a</span>() * <span class="number">2</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;A2&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> A1 = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">A2</span>() + <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;A1&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> A = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">A1</span>() - <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;A&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> B1 = reaction::<span class="built_in">calc</span>([&amp;]() &#123; ++triggerCountB; <span class="keyword">return</span> <span class="built_in">a</span>() - <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;B1&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> B = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">B1</span>() + <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;B&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">A</span>() + <span class="built_in">B</span>(); &#125;).<span class="built_in">setName</span>(<span class="string">&quot;ds&quot;</span>);</span><br><span class="line">    triggerCountA = <span class="number">0</span>;</span><br><span class="line">    triggerCountB = <span class="number">0</span>;</span><br><span class="line">    *a = <span class="number">2</span>;</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCountA, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCountB, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">6</span>);</span><br><span class="line"></span><br><span class="line">    A<span class="number">1.</span><span class="built_in">reset</span>([](<span class="keyword">auto</span> bb)&#123;<span class="keyword">return</span> bb;&#125;, b);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">2</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="1-系统架构图"><a href="#1-系统架构图" class="headerlink" title="1. 系统架构图"></a>1. 系统架构图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">%% 系统整体架构图</span><br><span class="line">graph TD</span><br><span class="line">    A[ObserverNode] --&gt;|注册| B(ObserverGraph)</span><br><span class="line">    A --&gt;|绑定字段| C(FieldGraph)</span><br><span class="line">    B --&gt;|管理| D[节点关系网络]</span><br><span class="line">    C --&gt;|存储| E[字段-节点映射表]</span><br><span class="line"></span><br><span class="line">    style A fill:#f9f,stroke:#333</span><br><span class="line">    style B fill:#bbf,stroke:#333</span><br><span class="line">    style C fill:#bfb,stroke:#333</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-核心数据结构图解"><a href="#2-核心数据结构图解" class="headerlink" title="2. 核心数据结构图解"></a>2. 核心数据结构图解</h2><h3 id="2-1-节点关系存储结构"><a href="#2-1-节点关系存储结构" class="headerlink" title="2.1 节点关系存储结构"></a>2.1 节点关系存储结构</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">%% 数据结构关系图</span><br><span class="line">classDiagram</span><br><span class="line">    class ObserverGraph&#123;</span><br><span class="line">        +m_observerList: Map&lt;NodePtr, ObserverSet&gt;</span><br><span class="line">        +m_dependentList: Map&lt;NodePtr, DependentSet&gt;</span><br><span class="line">        +m_repeatList: Map&lt;NodePtr, RepeatCountMap&gt;</span><br><span class="line">        +m_nameList: Map&lt;NodePtr, String&gt;</span><br><span class="line">        +addObserver()</span><br><span class="line">        +checkCycle()</span><br><span class="line">        +closeNode()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    class ObserverNode&#123;</span><br><span class="line">        -m_observers: NodeSet</span><br><span class="line">        -m_repeats: NodeMap</span><br><span class="line">        +valueChanged()</span><br><span class="line">        +notify()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ObserverGraph &quot;1&quot; --&gt; &quot;*&quot; ObserverNode</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-实际内存结构示意图"><a href="#2-2-实际内存结构示意图" class="headerlink" title="2.2 实际内存结构示意图"></a>2.2 实际内存结构示意图</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+---------------------+</span><br><span class="line">|   ObserverGraph     |</span><br><span class="line">+---------------------+</span><br><span class="line">|  m_observerList     |--&gt; [NodeA: &#123;NodeB, NodeC&#125;]</span><br><span class="line">|                     |    [NodeB: &#123;NodeD&#125;]</span><br><span class="line">|  m_dependentList    |--&gt; [NodeB: &#123;NodeA&#125;]</span><br><span class="line">|                     |    [NodeC: &#123;NodeA&#125;]</span><br><span class="line">|  m_repeatList       |--&gt; [NodeD: &#123;NodeA:2&#125;]</span><br><span class="line">+---------------------+</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-关键流程详解"><a href="#3-关键流程详解" class="headerlink" title="3. 关键流程详解"></a>3. 关键流程详解</h2><h3 id="3-1-添加观察者流程"><a href="#3-1-添加观察者流程" class="headerlink" title="3.1 添加观察者流程"></a>3.1 添加观察者流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">%% 添加观察者序列图</span><br><span class="line">sequenceDiagram</span><br><span class="line">    participant User</span><br><span class="line">    participant SourceNode</span><br><span class="line">    participant ObserverGraph</span><br><span class="line">    participant TargetNode</span><br><span class="line"></span><br><span class="line">    User-&gt;&gt;SourceNode: updateObservers(TargetNode)</span><br><span class="line">    SourceNode-&gt;&gt;ObserverGraph: addObserver(Source, Target)</span><br><span class="line">    ObserverGraph-&gt;&gt;ObserverGraph: 检查自观察</span><br><span class="line">    alt 自观察</span><br><span class="line">        ObserverGraph--&gt;&gt;SourceNode: 返回错误</span><br><span class="line">    else</span><br><span class="line">        ObserverGraph-&gt;&gt;ObserverGraph: DFS检查循环依赖</span><br><span class="line">        alt 存在循环</span><br><span class="line">            ObserverGraph--&gt;&gt;SourceNode: 返回错误</span><br><span class="line">        else</span><br><span class="line">            ObserverGraph-&gt;&gt;ObserverGraph: 检查重复依赖路径</span><br><span class="line">            ObserverGraph-&gt;&gt;TargetNode: 添加到m_observers</span><br><span class="line">            ObserverGraph-&gt;&gt;SourceNode: 添加到m_dependentList</span><br><span class="line">            ObserverGraph--&gt;&gt;SourceNode: 返回成功</span><br><span class="line">        end</span><br><span class="line">    end</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-节点通知流程"><a href="#3-2-节点通知流程" class="headerlink" title="3.2 节点通知流程"></a>3.2 节点通知流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">%% 节点通知流程图</span><br><span class="line">graph LR</span><br><span class="line">    A[节点值变更] --&gt; B[调用valueChanged]</span><br><span class="line">    B --&gt; C&#123;是否有重复依赖?&#125;</span><br><span class="line">    C --&gt;|是| D[加入重复列表]</span><br><span class="line">    C --&gt;|否| E[立即通知]</span><br><span class="line">    D --&gt; F[最后批量通知重复节点]</span><br><span class="line">    E --&gt; G[遍历观察者链]</span><br><span class="line">    G --&gt; H[触发下游更新]</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-典型场景图示"><a href="#4-典型场景图示" class="headerlink" title="4. 典型场景图示"></a>4. 典型场景图示</h2><h3 id="4-1-正常观察链"><a href="#4-1-正常观察链" class="headerlink" title="4.1 正常观察链"></a>4.1 正常观察链</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">%% 正常观察关系图</span><br><span class="line">graph LR</span><br><span class="line">    A[数据节点] --&gt; B[视图组件1]</span><br><span class="line">    A --&gt; C[视图组件2]</span><br><span class="line">    B --&gt; D[聚合视图]</span><br><span class="line">    C --&gt; D</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-循环依赖检测"><a href="#4-2-循环依赖检测" class="headerlink" title="4.2 循环依赖检测"></a>4.2 循环依赖检测</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">%% 循环依赖示例图</span><br><span class="line">graph TD</span><br><span class="line">    A --&gt; B</span><br><span class="line">    B --&gt; C</span><br><span class="line">    C --&gt; A</span><br><span class="line">    style A stroke:#f00,stroke-width:2px</span><br><span class="line">    style B stroke:#f00,stroke-width:2px</span><br><span class="line">    style C stroke:#f00,stroke-width:2px</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-重复依赖处理"><a href="#4-3-重复依赖处理" class="headerlink" title="4.3 重复依赖处理"></a>4.3 重复依赖处理</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">%% 重复依赖示例图</span><br><span class="line">graph LR</span><br><span class="line">    A --&gt; B</span><br><span class="line">    A --&gt; C</span><br><span class="line">    B --&gt; D</span><br><span class="line">    C --&gt; D</span><br><span class="line"></span><br><span class="line">    subgraph 重复依赖</span><br><span class="line">    D</span><br><span class="line">    end</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-状态转换图"><a href="#5-状态转换图" class="headerlink" title="5. 状态转换图"></a>5. 状态转换图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">%% 节点生命周期状态图</span><br><span class="line">stateDiagram-v2</span><br><span class="line">    [*] --&gt; Created</span><br><span class="line">    Created --&gt; Active: addNode</span><br><span class="line">    Active --&gt; Observing: addObserver</span><br><span class="line">    Observing --&gt; Closed: closeNode</span><br><span class="line">    Closed --&gt; [*]</span><br><span class="line"></span><br><span class="line">    state Observing &#123;</span><br><span class="line">        [*] --&gt; Normal</span><br><span class="line">        Normal --&gt; HasRepeats: 检测到重复依赖</span><br><span class="line">        HasRepeats --&gt; Normal: 重复计数清零</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-性能优化要点"><a href="#6-性能优化要点" class="headerlink" title="6. 性能优化要点"></a>6. 性能优化要点</h2><ol>
+<li><p><strong>依赖检查优化</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[DFS优化策略]</span><br><span class="line">┌───────────────┐    ┌───────────────┐</span><br><span class="line">│ 临时添加边    │───&gt;│ 执行DFS检查   │</span><br><span class="line">└───────────────┘    └───────────────┘</span><br><span class="line">         ▲                  │</span><br><span class="line">         └──────────────────┘</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>批量通知机制</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">普通通知路径: 节点 → 直接观察者</span><br><span class="line">┌───────────────────────────────────────┐</span><br><span class="line">│ 重复依赖处理路径:                      │</span><br><span class="line">│ 1. 收集所有重复节点                   │</span><br><span class="line">│ 2. 主通知流程完成后批量触发           │</span><br><span class="line">└───────────────────────────────────────┘</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="7-异常处理图示"><a href="#7-异常处理图示" class="headerlink" title="7. 异常处理图示"></a>7. 异常处理图示</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">%% 错误处理流程图</span><br><span class="line">graph TD</span><br><span class="line">    A[操作请求] --&gt; B&#123;是否有效节点?&#125;</span><br><span class="line">    B --&gt;|否| C[返回无效节点错误]</span><br><span class="line">    B --&gt;|是| D&#123;是否自观察?&#125;</span><br><span class="line">    D --&gt;|是| E[返回自观察错误]</span><br><span class="line">    D --&gt;|否| F&#123;是否循环依赖?&#125;</span><br><span class="line">    F --&gt;|是| G[返回循环依赖错误]</span><br><span class="line">    F --&gt;|否| H[执行操作]</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/05/27/%E7%AC%AC%E5%85%AB%E7%AB%A0%EF%BC%9A%E8%8A%82%E7%82%B9%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0/" data-id="cmb698cyp000044kya0u67uv1" data-title="第八章：节点关系图的实现" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Modern-Cpp/" rel="tag">Modern-Cpp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reactive-programming/" rel="tag">Reactive-programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TMP/" rel="tag">TMP</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2025/05/13/%E7%AC%AC%E4%B8%83%E7%AB%A0%EF%BC%9A%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A8%A1%E6%9D%BF%E7%9A%84%E4%BD%BF%E7%94%A8/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">第七章：表达式模板的使用</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Reaction/">Reaction</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Modern-Cpp/" rel="tag">Modern-Cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Reactive-programming/" rel="tag">Reactive-programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TMP/" rel="tag">TMP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Reactive-programming-C-Modern-Cpp-TMP/" rel="tag">\[Reactive-programming, C++, Modern-Cpp, TMP]</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 20px;">C++</a> <a href="/tags/Modern-Cpp/" style="font-size: 20px;">Modern-Cpp</a> <a href="/tags/Reactive-programming/" style="font-size: 20px;">Reactive-programming</a> <a href="/tags/TMP/" style="font-size: 20px;">TMP</a> <a href="/tags/Reactive-programming-C-Modern-Cpp-TMP/" style="font-size: 10px;">\[Reactive-programming, C++, Modern-Cpp, TMP]</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/05/">May 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/04/">April 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2025/05/27/%E7%AC%AC%E5%85%AB%E7%AB%A0%EF%BC%9A%E8%8A%82%E7%82%B9%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0/">第八章：节点关系图的实现</a>
+          </li>
+        
+          <li>
+            <a href="/2025/05/13/%E7%AC%AC%E4%B8%83%E7%AB%A0%EF%BC%9A%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A8%A1%E6%9D%BF%E7%9A%84%E4%BD%BF%E7%94%A8/">第七章：表达式模板的使用</a>
+          </li>
+        
+          <li>
+            <a href="/2025/05/09/%E7%AC%AC%E5%85%AD%E7%AB%A0%EF%BC%9A%E7%BC%96%E8%AF%91%E6%9C%9F%E5%8F%8D%E5%B0%84private%E6%88%90%E5%91%98/">第六章：编译期反射 private 成员</a>
+          </li>
+        
+          <li>
+            <a href="/2025/05/09/%E7%AC%AC%E4%BA%94%E7%AB%A0%EF%BC%9A%E7%BC%96%E8%AF%91%E6%9C%9F%E5%8F%8D%E5%B0%84%E5%88%9D%E6%8E%A2%EF%BC%81%EF%BC%81/">第五章：编译期反射初探！</a>
+          </li>
+        
+          <li>
+            <a href="/2025/05/07/%E7%AC%AC%E4%B8%89%E7%AB%A0%EF%BC%9A%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E6%BA%90%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%AE%A1%E7%90%86/">第三章：实现数据源的生命周期管理</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2025 Lummy<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
