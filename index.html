@@ -71,6 +71,329 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-第九章：触发模式的实现" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/05/28/%E7%AC%AC%E4%B9%9D%E7%AB%A0%EF%BC%9A%E8%A7%A6%E5%8F%91%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/" class="article-date">
+  <time class="dt-published" datetime="2025-05-28T09:37:15.364Z" itemprop="datePublished">2025-05-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Reaction/">Reaction</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2025/05/28/%E7%AC%AC%E4%B9%9D%E7%AB%A0%EF%BC%9A%E8%A7%A6%E5%8F%91%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/">第九章：触发模式的实现</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="第九章：触发模式的实现"><a href="#第九章：触发模式的实现" class="headerlink" title="第九章：触发模式的实现"></a>第九章：触发模式的实现</h1><h2 id="✅-什么是静态多态（Static-Polymorphism）"><a href="#✅-什么是静态多态（Static-Polymorphism）" class="headerlink" title="✅ 什么是静态多态（Static Polymorphism）"></a>✅ 什么是静态多态（Static Polymorphism）</h2><blockquote>
+<p><strong>静态多态</strong>是指在<strong>编译期</strong>决定调用哪个函数版本的多态行为，通常通过模板实现。</p>
+</blockquote>
+<p>对比动态多态：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>实现方式</th>
+<th>多态决议时间</th>
+<th>开销</th>
+<th>可内联</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>动态多态</td>
+<td>虚函数 + 指针&#x2F;引用</td>
+<td>运行时</td>
+<td>虚表开销</td>
+<td>否</td>
+</tr>
+<tr>
+<td>静态多态</td>
+<td>模板 &#x2F; CRTP</td>
+<td>编译时</td>
+<td>零开销</td>
+<td>✅ 可内联</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🌟-实现静态多态的两种常见方式"><a href="#🌟-实现静态多态的两种常见方式" class="headerlink" title="🌟 实现静态多态的两种常见方式"></a>🌟 实现静态多态的两种常见方式</h2><hr>
+<h3 id="✅-方式一：模板参数接口（Duck-Typing）"><a href="#✅-方式一：模板参数接口（Duck-Typing）" class="headerlink" title="✅ 方式一：模板参数接口（Duck Typing）"></a>✅ 方式一：<strong>模板参数接口（Duck Typing）</strong></h3><p>策略类只要<strong>包含某个函数名</strong>就可以作为模板参数传入使用。</p>
+<h4 id="示例："><a href="#示例：" class="headerlink" title="示例："></a>示例：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> TriggerPolicy&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">update</span><span class="params">(<span class="type">double</span> newVal)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (TriggerPolicy&#123;&#125;.<span class="built_in">checkTrigger</span>(newVal)) &#123;</span><br><span class="line">            std::cout &lt;&lt; <span class="string">&quot;Triggered!\n&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">AlwaysTrigger</span> &#123;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">checkTrigger</span><span class="params">(<span class="type">double</span>)</span> </span>&#123; <span class="keyword">return</span> <span class="literal">true</span>; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Node&lt;AlwaysTrigger&gt; node;  <span class="comment">// 编译期绑定</span></span><br><span class="line">node.<span class="built_in">update</span>(<span class="number">42</span>);           <span class="comment">// 输出 Triggered!</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="✅-优点："><a href="#✅-优点：" class="headerlink" title="✅ 优点："></a>✅ 优点：</h4><ul>
+<li>结构简单，零运行时开销；</li>
+<li>不需要继承和虚函数；</li>
+<li>编译期保证接口存在。</li>
+</ul>
+<h4 id="❌-缺点："><a href="#❌-缺点：" class="headerlink" title="❌ 缺点："></a>❌ 缺点：</h4><ul>
+<li>错误信息可读性差（如果函数名写错）；</li>
+<li>不能在运行时替换策略。</li>
+</ul>
+<hr>
+<h3 id="✅-方式二：CRTP（Curiously-Recurring-Template-Pattern）"><a href="#✅-方式二：CRTP（Curiously-Recurring-Template-Pattern）" class="headerlink" title="✅ 方式二：CRTP（Curiously Recurring Template Pattern）"></a>✅ 方式二：<strong>CRTP（Curiously Recurring Template Pattern）</strong></h3><p>CRTP 是一种让子类通过模板参数传递给父类，实现“静态的接口调用”。</p>
+<h4 id="示例：-1"><a href="#示例：-1" class="headerlink" title="示例："></a>示例：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> Derived&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">interface</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="built_in">static_cast</span>&lt;Derived*&gt;(<span class="keyword">this</span>)-&gt;<span class="built_in">implementation</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span> : <span class="keyword">public</span> Base&lt;Derived&gt; &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">implementation</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;Derived impl\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Derived d;</span><br><span class="line">d.<span class="built_in">interface</span>();  <span class="comment">// 输出 Derived impl</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="✅-优点：-1"><a href="#✅-优点：-1" class="headerlink" title="✅ 优点："></a>✅ 优点：</h4><ul>
+<li>可构建静态接口体系，类似虚函数但无虚表；</li>
+<li>支持接口层逻辑共享（在 Base 中定义默认逻辑）；</li>
+<li>在编译期完成派发，性能优异。</li>
+</ul>
+<hr>
+<h2 id="🚀-静态多态的典型应用场景"><a href="#🚀-静态多态的典型应用场景" class="headerlink" title="🚀 静态多态的典型应用场景"></a>🚀 静态多态的典型应用场景</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>策略模式</td>
+<td>如你提供的 Trigger &#x2F; Strategy 接口模式</td>
+</tr>
+<tr>
+<td>数值计算框架</td>
+<td>如 Eigen &#x2F; Blaze &#x2F; Tensor 模板表达式</td>
+</tr>
+<tr>
+<td>自定义容器 &#x2F; 算法</td>
+<td>如 STL 算法用 <code>Compare</code>、<code>Allocator</code> 等模板类型</td>
+</tr>
+<tr>
+<td>CRTP 接口设计</td>
+<td>可为派生类提供静态的“虚接口”体系</td>
+</tr>
+<tr>
+<td>模板元编程 &#x2F; Policy</td>
+<td>大型系统中常用政策类来配置行为，如 Boost.Spirit</td>
+</tr>
+</tbody></table>
+<h2 id="🧠-对比动态多态（虚函数）的设计取舍"><a href="#🧠-对比动态多态（虚函数）的设计取舍" class="headerlink" title="🧠 对比动态多态（虚函数）的设计取舍"></a>🧠 对比动态多态（虚函数）的设计取舍</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>静态多态（模板）</th>
+<th>动态多态（虚函数）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>决议时间</td>
+<td>编译期</td>
+<td>运行时</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>极高，无虚表，无额外内存访问</td>
+<td>较低，虚表跳转，有缓存 miss 风险</td>
+</tr>
+<tr>
+<td>灵活性</td>
+<td>模板固定，运行时不可切换策略</td>
+<td>可以运行时替换子类实例</td>
+</tr>
+<tr>
+<td>接口约束</td>
+<td>鸭子类型，易出错</td>
+<td>明确接口（基类定义），类型安全</td>
+</tr>
+<tr>
+<td>错误提示</td>
+<td>编译期但复杂，可读性差</td>
+<td>运行时报错少，但类型明确</td>
+</tr>
+<tr>
+<td>应用场景</td>
+<td>高性能需求、底层框架、可组合策略</td>
+<td>插件系统、脚本引擎、接口稳定性优先</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="从默认模板参数谈到别名模板和变量模板的本质："><a href="#从默认模板参数谈到别名模板和变量模板的本质：" class="headerlink" title="从默认模板参数谈到别名模板和变量模板的本质："></a>从默认模板参数谈到别名模板和变量模板的本质：</h1><p>先看下面一段代码：<br><a target="_blank" rel="noopener" href="https://godbolt.org/z/hrE4Tn9Gr">https://godbolt.org/z/hrE4Tn9Gr</a></p>
+<h3 id="关键区别解析"><a href="#关键区别解析" class="headerlink" title="关键区别解析"></a>关键区别解析</h3><h4 id="1-函数模板的特殊性（func2-为何能通过）"><a href="#1-函数模板的特殊性（func2-为何能通过）" class="headerlink" title="1. 函数模板的特殊性（func2 为何能通过）"></a>1. 函数模板的特殊性（<code>func2</code> 为何能通过）</h4><ul>
+<li><strong>参数推导机制</strong>：函数模板可以通过函数参数推导缺失的模板参数。<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T1 </span>= <span class="type">int</span>, <span class="keyword">typename</span> T2&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func2</span><span class="params">(T2 a)</span> </span>&#123; <span class="comment">/* ... */</span> &#125;  <span class="comment">// T2 通过实参推导</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">func2</span>(<span class="number">42</span>);  <span class="comment">// T2 被推导为 int, T1 使用默认 int</span></span><br></pre></td></tr></table></figure></li>
+<li><strong>非连续默认参数允许</strong>：只要调用时能推导出所有非默认参数，即使默认参数在左侧（如 <code>T1</code>）也能编译。</li>
+</ul>
+<h4 id="2-类模板-别名模板的严格性（Alia2-为何报错）"><a href="#2-类模板-别名模板的严格性（Alia2-为何报错）" class="headerlink" title="2. 类模板&#x2F;别名模板的严格性（Alia2 为何报错）"></a>2. 类模板&#x2F;别名模板的严格性（<code>Alia2</code> 为何报错）</h4><ul>
+<li><strong>无参数推导机制</strong>：类模板、别名模板和变量模板<strong>没有调用时的参数推导</strong>，必须显式指定所有参数或依赖默认值。</li>
+<li><strong>从右向左连续规则</strong>：<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 合法：默认参数从右向左连续</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T1, <span class="keyword">typename</span> T2 = <span class="type">int</span>&gt;</span><br><span class="line"><span class="keyword">using</span> Alia1 = Obj&lt;T1, T2&gt;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 非法：T1 有默认值但 T2 无默认值</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T1 = <span class="type">int</span>, <span class="keyword">typename</span> T2&gt;</span><br><span class="line"><span class="keyword">using</span> Alia2 = Obj&lt;T1, T2&gt;; <span class="comment">// 错误！</span></span><br></pre></td></tr></table></figure></li>
+<li><strong>实例化依赖显式指定</strong>：<br>若允许 <code>Alia2</code> 存在，则实例化时无法确定如何省略参数：<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Alia2&lt;<span class="type">double</span>&gt; obj; <span class="comment">// 歧义：</span></span><br><span class="line">                   <span class="comment">// 1. T1=double, T2=? (无默认值)</span></span><br><span class="line">                   <span class="comment">// 2. T1=int (默认), T2=double?</span></span><br></pre></td></tr></table></figure>
+编译器无法解析这种歧义，因此强制要求默认参数必须从右向左连续。</li>
+</ul>
+<h3 id="根本原因：实例化机制差异"><a href="#根本原因：实例化机制差异" class="headerlink" title="根本原因：实例化机制差异"></a>根本原因：实例化机制差异</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>函数模板</th>
+<th>类模板&#x2F;别名模板&#x2F;变量模板</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>参数推导</strong></td>
+<td>支持（通过函数参数）</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td><strong>实例化触发</strong></td>
+<td>调用时推导</td>
+<td>显式指定类型时实例化</td>
+</tr>
+<tr>
+<td><strong>默认参数规则</strong></td>
+<td>允许非连续（依赖推导补全）</td>
+<td>必须从右向左连续</td>
+</tr>
+<tr>
+<td><strong>错误触发时机</strong></td>
+<td>调用时（若无法推导）</td>
+<td>声明时（违反连续规则）</td>
+</tr>
+</tbody></table>
+<p>将别名模板（alias template）和变量模板（variable template）描述为”语法糖”是一个很恰当的比喻。</p>
+<h3 id="什么是”语法糖”？"><a href="#什么是”语法糖”？" class="headerlink" title="什么是”语法糖”？"></a>什么是”语法糖”？</h3><p>在编程语言中，”语法糖”指的是：</p>
+<ol>
+<li>不引入新功能，只是提供更简洁、更易读的语法</li>
+<li>在编译时会转换为更基础的语法结构</li>
+<li>使代码更符合人类直觉的表达方式</li>
+<li>不改变底层执行逻辑或性能特征</li>
+</ol>
+<h3 id="别名模板作为语法糖"><a href="#别名模板作为语法糖" class="headerlink" title="别名模板作为语法糖"></a>别名模板作为语法糖</h3><p><strong>本质</strong>：别名模板是类模板特化的简写形式</p>
+<h4 id="示例对比："><a href="#示例对比：" class="headerlink" title="示例对比："></a>示例对比：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 基础类模板</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MyVector</span> &#123;</span><br><span class="line">    <span class="comment">// 复杂实现...</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 传统使用方式（冗长）</span></span><br><span class="line">MyVector&lt;<span class="type">int</span>&gt; v1;</span><br><span class="line">MyVector&lt;<span class="type">double</span>&gt; v2;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 别名模板（语法糖）</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">using</span> Vec = MyVector&lt;T&gt;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 简化后的使用</span></span><br><span class="line">Vec&lt;<span class="type">int</span>&gt; v3;</span><br><span class="line">Vec&lt;<span class="type">double</span>&gt; v4;</span><br></pre></td></tr></table></figure>
+
+<p><strong>编译时转换</strong>：</p>
+<ul>
+<li><code>Vec&lt;int&gt;</code> 在编译时直接替换为 <code>MyVector&lt;int&gt;</code></li>
+<li>不生成新类型，只是现有类型的别名</li>
+<li>类型特征检查时等同于原始类型：<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">static_assert</span>(std::is_same_v&lt;Vec&lt;<span class="type">int</span>&gt;, MyVector&lt;<span class="type">int</span>&gt;&gt;); <span class="comment">// true</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="变量模板作为语法糖"><a href="#变量模板作为语法糖" class="headerlink" title="变量模板作为语法糖"></a>变量模板作为语法糖</h3><p><strong>本质</strong>：变量模板是类模板静态成员的简写形式</p>
+<h4 id="示例对比：-1"><a href="#示例对比：-1" class="headerlink" title="示例对比："></a>示例对比：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 传统方式：通过类模板的静态成员</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Constants</span> &#123;</span><br><span class="line">    <span class="type">static</span> <span class="keyword">constexpr</span> T PI = <span class="built_in">T</span>(<span class="number">3.1415926535</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用方式（冗长）</span></span><br><span class="line"><span class="type">double</span> circle = Constants&lt;<span class="type">double</span>&gt;::PI * r * r;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 变量模板（语法糖）</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">constexpr</span> T PI = <span class="built_in">T</span>(<span class="number">3.1415926535</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 简化后的使用</span></span><br><span class="line"><span class="type">double</span> circle = PI&lt;<span class="type">double</span>&gt; * r * r;</span><br></pre></td></tr></table></figure>
+
+<p><strong>编译时转换</strong>：</p>
+<ul>
+<li><code>PI&lt;double&gt;</code> 直接替换为 <code>Constants&lt;double&gt;::PI</code></li>
+<li>不创建新实体，只是现有静态成员的别名访问</li>
+<li>地址相同证明是同一实体：<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">assert</span>(&amp;PI&lt;<span class="type">double</span>&gt; == &amp;Constants&lt;<span class="type">double</span>&gt;::PI);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="为什么它们需要遵守类模板的规则？"><a href="#为什么它们需要遵守类模板的规则？" class="headerlink" title="为什么它们需要遵守类模板的规则？"></a>为什么它们需要遵守类模板的规则？</h3><p>虽然别名模板和变量模板是语法糖，但它们的实现依赖于底层类模板机制：</p>
+<ol>
+<li><p><strong>类型系统一致性</strong>：</p>
+<ul>
+<li>别名模板最终指向类模板特化</li>
+<li>必须遵守类模板的实例化规则</li>
+<li>包括默认参数必须从右向左连续</li>
+</ul>
+</li>
+<li><p><strong>实例化机制</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T = <span class="type">void</span>&gt; <span class="comment">// 错误：非连续默认</span></span><br><span class="line"><span class="keyword">using</span> ErrorProne = std::vector&lt;T&gt;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>实例化时 <code>ErrorProne&lt;&gt;</code> 无法确定类型</li>
+<li>因为底层 <code>std::vector&lt;&gt;</code> 要求明确指定元素类型</li>
+</ul>
+</li>
+<li><p><strong>元编程特性</strong>：</p>
+<ul>
+<li>在模板元编程中，别名模板参与类型计算</li>
+<li>必须保持与类模板相同的特化规则</li>
+<li>例如偏特化传播：<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">is_int</span> : std::false_type &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;&gt;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">is_int</span>&lt;<span class="type">int</span>&gt; : std::true_type &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">using</span> IsInt = is_int&lt;T&gt;; <span class="comment">// 继承所有特化</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ol>
+<h3 id="关键区别：语法糖-vs-新实体"><a href="#关键区别：语法糖-vs-新实体" class="headerlink" title="关键区别：语法糖 vs 新实体"></a>关键区别：语法糖 vs 新实体</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>类模板</th>
+<th>别名模板&#x2F;变量模板</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>创建新类型&#x2F;实体</strong></td>
+<td>是</td>
+<td>否（仅是别名）</td>
+</tr>
+<tr>
+<td><strong>内存占用</strong></td>
+<td>可能产生新实例化</td>
+<td>零开销</td>
+</tr>
+<tr>
+<td><strong>ODR 使用</strong></td>
+<td>需要完整定义</td>
+<td>仅需声明</td>
+</tr>
+<tr>
+<td><strong>默认参数规则</strong></td>
+<td>从右向左连续</td>
+<td>继承相同规则</td>
+</tr>
+<tr>
+<td><strong>模板特化</strong></td>
+<td>支持全特化&#x2F;偏特化</td>
+<td>只能基于现有特化</td>
+</tr>
+</tbody></table>
+<h3 id="实际价值"><a href="#实际价值" class="headerlink" title="实际价值"></a>实际价值</h3><p>虽然本质是语法糖，但它们提供了重大价值：</p>
+<ol>
+<li><p><strong>可读性提升</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 未使用别名模板</span></span><br><span class="line">std::map&lt;std::string, std::vector&lt;std::pair&lt;<span class="type">int</span>, <span class="type">double</span>&gt;&gt;&gt; complexType;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用别名模板</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> K, <span class="keyword">typename</span> V&gt;</span><br><span class="line"><span class="keyword">using</span> Dictionary = std::map&lt;K, std::vector&lt;std::pair&lt;<span class="type">int</span>, V&gt;&gt;&gt;;</span><br><span class="line"></span><br><span class="line">Dictionary&lt;std::string, <span class="type">double</span>&gt; readableType;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>减少样板代码</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 传统方式</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Identity</span> &#123;</span><br><span class="line">    <span class="keyword">using</span> type = T;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用别名模板</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">using</span> Identity_t = <span class="keyword">typename</span> Identity&lt;T&gt;::type;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>API 简化</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 变量模板简化标准库</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt;</span><br><span class="line"><span class="keyword">inline</span> <span class="keyword">constexpr</span> <span class="type">bool</span> is_pointer_v = std::is_pointer&lt;T&gt;::value;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ol>
+<li><p>别名模板和变量模板确实是语法糖：</p>
+<ul>
+<li>编译时展开为底层类模板结构</li>
+<li>不创建新类型或新存储实体</li>
+<li>提供更简洁的访问接口</li>
+</ul>
+</li>
+<li><p>但必须遵守类模板规则：</p>
+<ul>
+<li>因为它们直接映射到类模板特化</li>
+<li>类型系统要求一致性</li>
+<li>实例化机制依赖底层模板</li>
+</ul>
+</li>
+<li><p>这种设计是深思熟虑的：</p>
+<ul>
+<li>保持类型系统一致性</li>
+<li>避免引入新规则导致的复杂性</li>
+<li>在零开销抽象下提供语法便利</li>
+</ul>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/05/28/%E7%AC%AC%E4%B9%9D%E7%AB%A0%EF%BC%9A%E8%A7%A6%E5%8F%91%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/" data-id="cmb7rtxj50000b7kya0e2gq78" data-title="第九章：触发模式的实现" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Modern-Cpp/" rel="tag">Modern-Cpp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reactive-programming/" rel="tag">Reactive-programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TMP/" rel="tag">TMP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-第八章：节点关系图的实现" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2025/05/27/%E7%AC%AC%E5%85%AB%E7%AB%A0%EF%BC%9A%E8%8A%82%E7%82%B9%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0/" class="article-date">
@@ -97,7 +420,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="第八章：节点关系图的实现"><a href="#第八章：节点关系图的实现" class="headerlink" title="第八章：节点关系图的实现"></a>第八章：节点关系图的实现</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(TestSelfDependency, ReactionTest) &#123;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="keyword">auto</span> c = reaction::<span class="built_in">var</span>(<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsA = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> aa) &#123; <span class="keyword">return</span> aa; &#125;, a);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(dsA.<span class="built_in">reset</span>([](<span class="type">int</span> aa, <span class="type">int</span> dsAValue) &#123; <span class="keyword">return</span> aa + dsAValue; &#125;, a, dsA),</span><br><span class="line">        reaction::ReactionError::CycleDepErr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(TestCycleDependency, ReactionTest) &#123;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="keyword">auto</span> c = reaction::<span class="built_in">var</span>(<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsA = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> bb) &#123; <span class="keyword">return</span> bb; &#125;, b);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsB = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> cc) &#123; <span class="keyword">return</span> cc; &#125;, c);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsC = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> aa) &#123; <span class="keyword">return</span> aa; &#125;, a);</span><br><span class="line"></span><br><span class="line">    dsA.<span class="built_in">reset</span>([](<span class="type">int</span> bb, <span class="type">int</span> dsBValue) &#123; <span class="keyword">return</span> bb + dsBValue; &#125;, b, dsB);</span><br><span class="line"></span><br><span class="line">    dsB.<span class="built_in">reset</span>([](<span class="type">int</span> cc, <span class="type">int</span> dsCValue) &#123; <span class="keyword">return</span> cc * dsCValue; &#125;, c, dsC);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(dsC.<span class="built_in">reset</span>([](<span class="type">int</span> aa, <span class="type">int</span> dsAValue) &#123; <span class="keyword">return</span> aa - dsAValue; &#125;, a, dsA),</span><br><span class="line">        reaction::ReactionError::CycleDepErr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Test for repeat dependencies and the number of trigger counts</span></span><br><span class="line"><span class="built_in">TEST</span>(TestRepeatDependency, ReactionTest) &#123;</span><br><span class="line">    <span class="comment">// ds → A, ds → a, A → a</span></span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>).<span class="built_in">setName</span>(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>).<span class="built_in">setName</span>(<span class="string">&quot;b&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> triggerCount = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">auto</span> dsA = reaction::<span class="built_in">calc</span>([&amp;]() &#123;</span><br><span class="line">                               ++triggerCount;</span><br><span class="line">                               <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="built_in">b</span>(); &#125;).<span class="built_in">setName</span>(<span class="string">&quot;dsA&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsB = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="built_in">dsA</span>(); &#125;).<span class="built_in">setName</span>(<span class="string">&quot;dsB&quot;</span>);</span><br><span class="line"></span><br><span class="line">    triggerCount = <span class="number">0</span>;</span><br><span class="line">    *a = <span class="number">2</span>;</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCount, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(dsB.<span class="built_in">get</span>(), <span class="number">6</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(TestRepeatDependency2, ReactionTest) &#123;</span><br><span class="line">    <span class="comment">// ds → A, ds → B, ds → C, A → a, B → a</span></span><br><span class="line">    <span class="type">int</span> triggerCountA = <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> triggerCountB = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>).<span class="built_in">setName</span>(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> A = reaction::<span class="built_in">calc</span>([&amp;]() &#123; ++triggerCountA; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;A&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> B = reaction::<span class="built_in">calc</span>([&amp;]() &#123; ++triggerCountB; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="number">2</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;B&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> C = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="number">5</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;C&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">A</span>() + <span class="built_in">B</span>() + <span class="built_in">C</span>(); &#125;).<span class="built_in">setName</span>(<span class="string">&quot;ds&quot;</span>);</span><br><span class="line"></span><br><span class="line">    triggerCountA = <span class="number">0</span>;</span><br><span class="line">    triggerCountB = <span class="number">0</span>;</span><br><span class="line">    *a = <span class="number">2</span>;</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCountA, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCountB, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">12</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(TestRepeatDependency3, ReactionTest) &#123;</span><br><span class="line">    <span class="comment">// ds → A, ds → B, A → A1, A1 → A2, A2 → a, B → B1, B1 → a</span></span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>).<span class="built_in">setName</span>(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">1</span>).<span class="built_in">setName</span>(<span class="string">&quot;b&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> triggerCountA = <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> triggerCountB = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">auto</span> A2 = reaction::<span class="built_in">calc</span>([&amp;]() &#123; ++triggerCountA; <span class="keyword">return</span> <span class="built_in">a</span>() * <span class="number">2</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;A2&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> A1 = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">A2</span>() + <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;A1&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> A = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">A1</span>() - <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;A&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> B1 = reaction::<span class="built_in">calc</span>([&amp;]() &#123; ++triggerCountB; <span class="keyword">return</span> <span class="built_in">a</span>() - <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;B1&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> B = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">B1</span>() + <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;B&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">A</span>() + <span class="built_in">B</span>(); &#125;).<span class="built_in">setName</span>(<span class="string">&quot;ds&quot;</span>);</span><br><span class="line">    triggerCountA = <span class="number">0</span>;</span><br><span class="line">    triggerCountB = <span class="number">0</span>;</span><br><span class="line">    *a = <span class="number">2</span>;</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCountA, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCountB, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">6</span>);</span><br><span class="line"></span><br><span class="line">    A<span class="number">1.</span><span class="built_in">reset</span>([](<span class="keyword">auto</span> bb)&#123;<span class="keyword">return</span> bb;&#125;, b);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">2</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+        <h1 id="第八章：节点关系图的实现"><a href="#第八章：节点关系图的实现" class="headerlink" title="第八章：节点关系图的实现"></a>第八章：节点关系图的实现</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(ReactionTest, TestSelfDependency) &#123;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="keyword">auto</span> c = reaction::<span class="built_in">var</span>(<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsA = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> aa) &#123; <span class="keyword">return</span> aa; &#125;, a);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(dsA.<span class="built_in">reset</span>([](<span class="type">int</span> aa, <span class="type">int</span> dsAValue) &#123; <span class="keyword">return</span> aa + dsAValue; &#125;, a, dsA),</span><br><span class="line">        reaction::ReactionError::CycleDepErr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(ReactionTest, TestCycleDependency) &#123;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="keyword">auto</span> c = reaction::<span class="built_in">var</span>(<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsA = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> bb) &#123; <span class="keyword">return</span> bb; &#125;, b);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsB = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> cc) &#123; <span class="keyword">return</span> cc; &#125;, c);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsC = reaction::<span class="built_in">calc</span>([](<span class="type">int</span> aa) &#123; <span class="keyword">return</span> aa; &#125;, a);</span><br><span class="line"></span><br><span class="line">    dsA.<span class="built_in">reset</span>([](<span class="type">int</span> bb, <span class="type">int</span> dsBValue) &#123; <span class="keyword">return</span> bb + dsBValue; &#125;, b, dsB);</span><br><span class="line"></span><br><span class="line">    dsB.<span class="built_in">reset</span>([](<span class="type">int</span> cc, <span class="type">int</span> dsCValue) &#123; <span class="keyword">return</span> cc * dsCValue; &#125;, c, dsC);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(dsC.<span class="built_in">reset</span>([](<span class="type">int</span> aa, <span class="type">int</span> dsAValue) &#123; <span class="keyword">return</span> aa - dsAValue; &#125;, a, dsA),</span><br><span class="line">        reaction::ReactionError::CycleDepErr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Test for repeat dependencies and the number of trigger counts</span></span><br><span class="line"><span class="built_in">TEST</span>(ReactionTest, TestRepeatDependency) &#123;</span><br><span class="line">    <span class="comment">// ds → A, ds → a, A → a</span></span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>).<span class="built_in">setName</span>(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>).<span class="built_in">setName</span>(<span class="string">&quot;b&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> triggerCount = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">auto</span> dsA = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="built_in">b</span>(); &#125;).<span class="built_in">setName</span>(<span class="string">&quot;dsA&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> dsB = reaction::<span class="built_in">calc</span>([&amp;]() &#123;++triggerCount; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="built_in">dsA</span>(); &#125;).<span class="built_in">setName</span>(<span class="string">&quot;dsB&quot;</span>);</span><br><span class="line"></span><br><span class="line">    triggerCount = <span class="number">0</span>;</span><br><span class="line">    *a = <span class="number">2</span>;</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCount, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(dsB.<span class="built_in">get</span>(), <span class="number">6</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(ReactionTest, TestRepeatDependency2) &#123;</span><br><span class="line">    <span class="comment">// ds → A, ds → B, ds → C, A → a, B → a</span></span><br><span class="line">    <span class="type">int</span> triggerCount = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>).<span class="built_in">setName</span>(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> A = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;A&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> B = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="number">2</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;B&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> C = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="number">5</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;C&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([&amp;]() &#123; ++triggerCount; <span class="keyword">return</span> <span class="built_in">A</span>() + <span class="built_in">B</span>() + <span class="built_in">C</span>(); &#125;).<span class="built_in">setName</span>(<span class="string">&quot;ds&quot;</span>);</span><br><span class="line"></span><br><span class="line">    triggerCount = <span class="number">0</span>;</span><br><span class="line">    *a = <span class="number">2</span>;</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCount, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">12</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">TEST</span>(ReactionTest, TestRepeatDependency3) &#123;</span><br><span class="line">    <span class="comment">// ds → A, ds → B, A → A1, A1 → A2, A2 → a, B → B1, B1 → a</span></span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>).<span class="built_in">setName</span>(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">1</span>).<span class="built_in">setName</span>(<span class="string">&quot;b&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> triggerCount = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">auto</span> A2 = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>() * <span class="number">2</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;A2&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> A1 = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">A2</span>() + <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;A1&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> A = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">A1</span>() - <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;A&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> B1 = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>() - <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;B1&quot;</span>);</span><br><span class="line">    <span class="keyword">auto</span> B = reaction::<span class="built_in">calc</span>([&amp;]() &#123; <span class="keyword">return</span> <span class="built_in">B1</span>() + <span class="number">1</span>; &#125;).<span class="built_in">setName</span>(<span class="string">&quot;B&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([&amp;]() &#123; ++triggerCount; <span class="keyword">return</span> <span class="built_in">A</span>() + <span class="built_in">B</span>(); &#125;).<span class="built_in">setName</span>(<span class="string">&quot;ds&quot;</span>);</span><br><span class="line">    triggerCount = <span class="number">0</span>;</span><br><span class="line">    *a = <span class="number">2</span>;</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(triggerCount, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">6</span>);</span><br><span class="line"></span><br><span class="line">    A<span class="number">1.</span><span class="built_in">reset</span>([](<span class="keyword">auto</span> bb) &#123; <span class="keyword">return</span> bb; &#125;, b);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ds.<span class="built_in">get</span>(), <span class="number">2</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <h2 id="1-系统架构图"><a href="#1-系统架构图" class="headerlink" title="1. 系统架构图"></a>1. 系统架构图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">%% 系统整体架构图</span><br><span class="line">graph TD</span><br><span class="line">    A[ObserverNode] --&gt;|注册| B(ObserverGraph)</span><br><span class="line">    A --&gt;|绑定字段| C(FieldGraph)</span><br><span class="line">    B --&gt;|管理| D[节点关系网络]</span><br><span class="line">    C --&gt;|存储| E[字段-节点映射表]</span><br><span class="line"></span><br><span class="line">    style A fill:#f9f,stroke:#333</span><br><span class="line">    style B fill:#bbf,stroke:#333</span><br><span class="line">    style C fill:#bfb,stroke:#333</span><br></pre></td></tr></table></figure>
 
@@ -319,7 +642,7 @@
 </tr>
 </tbody></table>
 <hr>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">BasedOnStyle: LLVM</span><br><span class="line">IndentWidth: <span class="number">4</span></span><br><span class="line">ColumnLimit: <span class="number">0</span></span><br><span class="line">BinPackArguments: <span class="literal">true</span></span><br><span class="line">AccessModifierOffset: <span class="number">-4</span></span><br><span class="line">AlignAfterOpenBracket: DontAlign</span><br><span class="line">AllowShortIfStatementsOnASingleLine: <span class="literal">true</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">BasedOnStyle: LLVM</span><br><span class="line">IndentWidth: <span class="number">4</span></span><br><span class="line">ColumnLimit: <span class="number">0</span></span><br><span class="line">BinPackArguments: <span class="literal">true</span></span><br><span class="line">AccessModifierOffset: <span class="number">-4</span></span><br><span class="line">AlignAfterOpenBracket: DontAlign</span><br><span class="line">AllowShortIfStatementsOnASingleLine: <span class="function"><span class="literal">true</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">option</span><span class="params">(ENABLE_CLANG_TIDY <span class="string">&quot;Enable clang-tidy analysis&quot;</span> OFF)</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">if</span><span class="params">(ENABLE_CLANG_TIDY)</span></span></span><br><span class="line"><span class="function">  <span class="title">set</span><span class="params">(CMAKE_CXX_CLANG_TIDY</span></span></span><br><span class="line"><span class="params"><span class="function">    clang-tidy<span class="number">-19</span>;</span></span></span><br><span class="line"><span class="params"><span class="function">    -quiet;</span></span></span><br><span class="line"><span class="params"><span class="function">    -checks=modernize-*,readability-*,performance-*,-readability-identifier-length,-readability-magic-numbers,-modernize-use-trailing-<span class="keyword">return</span>-type,-readability-function-cognitive-complexity</span></span></span><br><span class="line"><span class="params"><span class="function">  )</span></span></span><br><span class="line"><span class="function"><span class="title">endif</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span></span><br></pre></td></tr></table></figure>
       
     </div>
     <footer class="article-footer">
@@ -1621,6 +1944,10 @@
       <ul>
         
           <li>
+            <a href="/2025/05/28/%E7%AC%AC%E4%B9%9D%E7%AB%A0%EF%BC%9A%E8%A7%A6%E5%8F%91%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/">第九章：触发模式的实现</a>
+          </li>
+        
+          <li>
             <a href="/2025/05/27/%E7%AC%AC%E5%85%AB%E7%AB%A0%EF%BC%9A%E8%8A%82%E7%82%B9%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0/">第八章：节点关系图的实现</a>
           </li>
         
@@ -1634,10 +1961,6 @@
         
           <li>
             <a href="/2025/05/09/%E7%AC%AC%E4%BA%94%E7%AB%A0%EF%BC%9A%E7%BC%96%E8%AF%91%E6%9C%9F%E5%8F%8D%E5%B0%84%E5%88%9D%E6%8E%A2%EF%BC%81%EF%BC%81/">第五章：编译期反射初探！</a>
-          </li>
-        
-          <li>
-            <a href="/2025/05/07/%E7%AC%AC%E4%B8%89%E7%AB%A0%EF%BC%9A%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E6%BA%90%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%AE%A1%E7%90%86/">第三章：实现数据源的生命周期管理</a>
           </li>
         
       </ul>

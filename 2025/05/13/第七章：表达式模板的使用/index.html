@@ -14,7 +14,7 @@
 <meta property="og:description" content="第七章：表达式模板的使用在实现表达式模板之前，我们先做一些准备工作。 首先实现action之间的依赖，一个action可以触发其他的action： 123456789101112131415161718TEST(ReactionTest, TestAction)&#123;    auto a &#x3D; reaction::var(1);    auto b &#x3D; reaction::var(3.14);">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-05-13T06:40:30.277Z">
-<meta property="article:modified_time" content="2025-05-27T08:19:58.738Z">
+<meta property="article:modified_time" content="2025-05-28T09:36:59.260Z">
 <meta property="article:author" content="Lummy">
 <meta property="article:tag" content="Reactive-programming">
 <meta property="article:tag" content="C++">
@@ -254,7 +254,7 @@
 </tr>
 </tbody></table>
 <hr>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">BasedOnStyle: LLVM</span><br><span class="line">IndentWidth: <span class="number">4</span></span><br><span class="line">ColumnLimit: <span class="number">0</span></span><br><span class="line">BinPackArguments: <span class="literal">true</span></span><br><span class="line">AccessModifierOffset: <span class="number">-4</span></span><br><span class="line">AlignAfterOpenBracket: DontAlign</span><br><span class="line">AllowShortIfStatementsOnASingleLine: <span class="literal">true</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">BasedOnStyle: LLVM</span><br><span class="line">IndentWidth: <span class="number">4</span></span><br><span class="line">ColumnLimit: <span class="number">0</span></span><br><span class="line">BinPackArguments: <span class="literal">true</span></span><br><span class="line">AccessModifierOffset: <span class="number">-4</span></span><br><span class="line">AlignAfterOpenBracket: DontAlign</span><br><span class="line">AllowShortIfStatementsOnASingleLine: <span class="function"><span class="literal">true</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">option</span><span class="params">(ENABLE_CLANG_TIDY <span class="string">&quot;Enable clang-tidy analysis&quot;</span> OFF)</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">if</span><span class="params">(ENABLE_CLANG_TIDY)</span></span></span><br><span class="line"><span class="function">  <span class="title">set</span><span class="params">(CMAKE_CXX_CLANG_TIDY</span></span></span><br><span class="line"><span class="params"><span class="function">    clang-tidy<span class="number">-19</span>;</span></span></span><br><span class="line"><span class="params"><span class="function">    -quiet;</span></span></span><br><span class="line"><span class="params"><span class="function">    -checks=modernize-*,readability-*,performance-*,-readability-identifier-length,-readability-magic-numbers,-modernize-use-trailing-<span class="keyword">return</span>-type,-readability-function-cognitive-complexity</span></span></span><br><span class="line"><span class="params"><span class="function">  )</span></span></span><br><span class="line"><span class="function"><span class="title">endif</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span></span><br></pre></td></tr></table></figure>
       
     </div>
     <footer class="article-footer">
@@ -341,6 +341,10 @@
       <ul>
         
           <li>
+            <a href="/2025/05/28/%E7%AC%AC%E4%B9%9D%E7%AB%A0%EF%BC%9A%E8%A7%A6%E5%8F%91%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/">第九章：触发模式的实现</a>
+          </li>
+        
+          <li>
             <a href="/2025/05/27/%E7%AC%AC%E5%85%AB%E7%AB%A0%EF%BC%9A%E8%8A%82%E7%82%B9%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0/">第八章：节点关系图的实现</a>
           </li>
         
@@ -354,10 +358,6 @@
         
           <li>
             <a href="/2025/05/09/%E7%AC%AC%E4%BA%94%E7%AB%A0%EF%BC%9A%E7%BC%96%E8%AF%91%E6%9C%9F%E5%8F%8D%E5%B0%84%E5%88%9D%E6%8E%A2%EF%BC%81%EF%BC%81/">第五章：编译期反射初探！</a>
-          </li>
-        
-          <li>
-            <a href="/2025/05/07/%E7%AC%AC%E4%B8%89%E7%AB%A0%EF%BC%9A%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E6%BA%90%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%AE%A1%E7%90%86/">第三章：实现数据源的生命周期管理</a>
           </li>
         
       </ul>
