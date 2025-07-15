@@ -1,35 +1,381 @@
-extends includes/layout.pug
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>从零实现响应式框架——基本概念和设计思路 | Lummy's blog</title><meta name="author" content="Lummy"><meta name="copyright" content="Lummy"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍在现代软件开发中，响应式编程正逐步成为构建数据驱动应用的重要范式。本文将带你深入了解响应式编程的核心理念，比较当前主流响应式框架的优劣，并探讨为何在 C++20 环境下实现响应式框架尤为必要。随后，我们将介绍 Reaction 框架的整体设计思路与架构布局。  🎯 本教程面向谁？本教程适合以下人群阅读：  具备 C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从零实现响应式框架——基本概念和设计思路">
+<meta property="og:url" content="http://example.com/2025/04/12/Reaction%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D/index.html">
+<meta property="og:site_name" content="Lummy&#39;s blog">
+<meta property="og:description" content="走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍在现代软件开发中，响应式编程正逐步成为构建数据驱动应用的重要范式。本文将带你深入了解响应式编程的核心理念，比较当前主流响应式框架的优劣，并探讨为何在 C++20 环境下实现响应式框架尤为必要。随后，我们将介绍 Reaction 框架的整体设计思路与架构布局。  🎯 本教程面向谁？本教程适合以下人群阅读：  具备 C">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-04-12T13:05:45.491Z">
+<meta property="article:modified_time" content="2025-04-22T15:21:04.249Z">
+<meta property="article:author" content="Lummy">
+<meta property="article:tag" content="Reactive-programming">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="Modern-Cpp">
+<meta property="article:tag" content="TMP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "从零实现响应式框架——基本概念和设计思路",
+  "url": "http://example.com/2025/04/12/Reaction%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-04-12T13:05:45.491Z",
+  "dateModified": "2025-04-22T15:21:04.249Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Lummy",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/04/12/Reaction%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
 
-block content
-  #post
-    if top_img === false
-      include includes/header/post-info.pug
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
 
-    article#article-container.container.post-content
-      if theme.noticeOutdate.enable && page.noticeOutdate !== false
-        include includes/post/outdate-notice.pug
-      else
-        !=page.content
-    include includes/post/post-copyright.pug
-    .tag_share
-      if (page.tags.length > 0 && theme.post_meta.post.tags)
-        .post-meta__tag-list
-          each item, index in page.tags.data
-            a(href=url_for(item.path)).post-meta__tags #[=item.name]
-      include includes/third-party/share/index.pug
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
 
-    if theme.reward.enable && theme.reward.QR_code
-      !=partial('includes/post/reward', {}, {cache: true})
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '从零实现响应式框架——基本概念和设计思路',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Lummy's blog" type="application/atom+xml">
+</head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Lummy's blog</span></a><a class="nav-page-title" href="/"><span class="site-name">从零实现响应式框架——基本概念和设计思路</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">从零实现响应式框架——基本概念和设计思路</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-04-12T13:05:45.491Z" title="Created 2025-04-12 21:05:45">2025-04-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-04-22T15:21:04.249Z" title="Updated 2025-04-22 23:21:04">2025-04-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Reaction/">Reaction</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="走进响应式编程：从理念到-C-20-实现-——-Reaction-响应式框架介绍"><a href="#走进响应式编程：从理念到-C-20-实现-——-Reaction-响应式框架介绍" class="headerlink" title="走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍"></a>走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍</h1><p>在现代软件开发中，响应式编程正逐步成为构建数据驱动应用的重要范式。本文将带你深入了解响应式编程的核心理念，比较当前主流响应式框架的优劣，并探讨为何在 C++20 环境下实现响应式框架尤为必要。随后，我们将介绍 Reaction 框架的整体设计思路与架构布局。</p>
+<hr>
+<h2 id="🎯-本教程面向谁？"><a href="#🎯-本教程面向谁？" class="headerlink" title="🎯 本教程面向谁？"></a>🎯 本教程面向谁？</h2><p>本教程适合以下人群阅读：</p>
+<ul>
+<li><strong>具备 C++ 基础的开发者</strong>：希望通过实战提升对语言本身的理解，掌握更现代的 C++20 编程范式。</li>
+<li><strong>对现代 C++ 感兴趣的学习者</strong>：希望学习 Concepts、constexpr、模板元编程等特性在工程中的实际用法。</li>
+<li><strong>正在求职或准备面试的 C++ 开发者</strong>：通过构建完整框架提升项目能力，积累可展示的实战经验。</li>
+<li><strong>希望了解响应式编程原理的人</strong>：尤其是在 Vue、React 等前端框架中有相关经验，想了解背后机制在 C++ 中的实现方式。</li>
+</ul>
+<p>如果你希望从零构建一个现代化、类型安全、高性能的响应式框架，那么这份系列教程将为你提供系统的思路与代码支撑。</p>
+<hr>
+<h2 id="1-什么是响应式编程？"><a href="#1-什么是响应式编程？" class="headerlink" title="1. 什么是响应式编程？"></a>1. 什么是响应式编程？</h2><p>响应式编程是一种以“数据驱动视图”和“自动更新”为核心的编程范式。其目标是当底层数据发生变化时，系统能够自动刷新所有依赖于该数据的部分，从而避免繁琐的手动更新逻辑，提升系统的实时性、稳定性和维护性。</p>
+<h3 id="1-1-基本概念"><a href="#1-1-基本概念" class="headerlink" title="1.1 基本概念"></a>1.1 基本概念</h3><ul>
+<li><p><strong>数据流（Data Flow）</strong><br>将数据视作一系列随时间变化的值流，当某个值更新时，其变化将自动传播到所有依赖者。</p>
+</li>
+<li><p><strong>依赖追踪（Dependency Tracking）</strong><br>系统自动记录数据之间的依赖关系，确保任何变化都能触发对应更新操作。</p>
+</li>
+<li><p><strong>声明式编程（Declarative Programming）</strong><br>开发者只需声明“数据之间的关系”，而不必显式编写“如何更新”的逻辑，框架会自动完成这些工作。</p>
+</li>
+</ul>
+<hr>
+<h2 id="2-主流响应式框架对比分析"><a href="#2-主流响应式框架对比分析" class="headerlink" title="2. 主流响应式框架对比分析"></a>2. 主流响应式框架对比分析</h2><p>目前在不同编程语言生态中，已经诞生了众多响应式框架。它们各具特色，覆盖前端开发、后端服务乃至系统编程领域。</p>
+<h3 id="2-1-JavaScript-TypeScript-生态"><a href="#2-1-JavaScript-TypeScript-生态" class="headerlink" title="2.1 JavaScript &#x2F; TypeScript 生态"></a>2.1 JavaScript &#x2F; TypeScript 生态</h3><ul>
+<li><p><strong>RxJS</strong></p>
+<ul>
+<li>优点：操作符丰富，支持异步流组合，适合事件密集型场景。</li>
+<li>缺点：学习曲线陡峭，操作链复杂，调试困难。</li>
+</ul>
+</li>
+<li><p><strong>Vue.js &#x2F; React</strong></p>
+<ul>
+<li>优点：通过响应式状态管理实现 UI 自动更新，极大简化前端开发。</li>
+<li>缺点：响应机制封装较深，底层调试不易。</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-2-Java-生态"><a href="#2-2-Java-生态" class="headerlink" title="2.2 Java 生态"></a>2.2 Java 生态</h3><ul>
+<li><strong>Reactor &#x2F; RxJava</strong><ul>
+<li>优点：强大的流处理能力，适用于高并发和分布式系统。</li>
+<li>缺点：设计复杂，资源消耗较大，学习成本高。</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-3-C-生态"><a href="#2-3-C-生态" class="headerlink" title="2.3 C# 生态"></a>2.3 C# 生态</h3><ul>
+<li><strong>Rx.NET</strong><ul>
+<li>优点：集成度高、语法简洁，非常适合异步编程。</li>
+<li>缺点：内存管理需谨慎，性能上不及底层语言。</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-4-C-生态"><a href="#2-4-C-生态" class="headerlink" title="2.4 C++ 生态"></a>2.4 C++ 生态</h3><ul>
+<li><p><strong>RxCpp</strong></p>
+<ul>
+<li>优点：API 接近 Rx 系列设计，功能完备，支持复杂流式操作。</li>
+<li>缺点：语法冗长、模板嵌套复杂，难以在简洁场景中高效应用。</li>
+</ul>
+</li>
+<li><p><strong>其他尝试性库（如 Bacon++）</strong></p>
+<ul>
+<li>优点：探索性设计，验证响应式模型在 C++ 中的可行性。</li>
+<li>缺点：社区活跃度低，文档不足，稳定性待提升。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="3-为什么选择-C-20-来实现响应式框架？"><a href="#3-为什么选择-C-20-来实现响应式框架？" class="headerlink" title="3. 为什么选择 C++20 来实现响应式框架？"></a>3. 为什么选择 C++20 来实现响应式框架？</h2><p>C++20 带来了诸多颠覆性特性，为响应式框架的高效实现奠定了基础：</p>
+<ul>
+<li><p><strong>Concepts 与 constexpr</strong><br>强类型约束和编译期计算能力显著增强，使得类型安全与性能优化并存。</p>
+</li>
+<li><p><strong>模板元编程能力增强</strong><br>支持更强大的编译期逻辑，能够构建“零运行时成本”的依赖追踪机制。</p>
+</li>
+<li><p><strong>模块化支持</strong><br>提高项目结构清晰度，减少编译依赖与时间成本，有助于大规模架构设计。</p>
+</li>
+</ul>
+<p>借助这些新特性，我们可以打造一个编译期友好、性能卓越、类型安全的响应式框架，填补 C++ 生态在 UI 状态管理和数据依赖表达方面的空白。</p>
+<hr>
+<h2 id="4-Reaction-响应式框架-——-设计理念与结构"><a href="#4-Reaction-响应式框架-——-设计理念与结构" class="headerlink" title="4. Reaction 响应式框架 —— 设计理念与结构"></a>4. Reaction 响应式框架 —— 设计理念与结构</h2><p>Reaction is a blazing-fast, modern C++20 header-only reactive framework that brings React&#x2F;Vue-style dataflow to native C++ – perfect for UI, game logic, and more.</p>
+<h3 id="🎯-Focused-on-UI-Dataflow-Management"><a href="#🎯-Focused-on-UI-Dataflow-Management" class="headerlink" title="🎯 Focused on UI Dataflow Management"></a>🎯 <strong>Focused on UI Dataflow Management</strong></h3><ul>
+<li><strong>Pure Data-Driven Updates</strong> – Optimized for <strong>one-way binding</strong> (Model → View)</li>
+<li><strong>No Event Emitters</strong> – Changes propagate <strong>only through data dependencies</strong>, avoiding callback hell</li>
+<li><strong>Predictable Updates</strong> – Strict <strong>top-down dataflow</strong> like React&#x2F;Vue, but with zero runtime overhead</li>
+</ul>
+<h4 id="Ideal-For"><a href="#Ideal-For" class="headerlink" title="Ideal For:"></a><strong>Ideal For:</strong></h4><p>✅ <strong>MVVM&#x2F;MVC UI Architectures</strong><br>✅ <strong>Game Object Properties</strong><br>✅ <strong>Form Validation Chains</strong><br>✅ <strong>Animation State Machines</strong></p>
+<h3 id="🚀-Performance-Optimized"><a href="#🚀-Performance-Optimized" class="headerlink" title="🚀 Performance Optimized"></a>🚀 Performance Optimized</h3><ul>
+<li><strong>Zero-cost abstractions</strong> through template metaprogramming</li>
+<li>Minimal runtime overhead with <strong>smart change propagation</strong></li>
+<li>Propagation efficiency <strong>at the level of millions per second</strong></li>
+</ul>
+<h3 id="🔗-Intelligent-Dependency-Management"><a href="#🔗-Intelligent-Dependency-Management" class="headerlink" title="🔗 Intelligent Dependency Management"></a>🔗 Intelligent Dependency Management</h3><ul>
+<li>Automatic <strong>DAG detection</strong> and cycle prevention</li>
+<li>Fine-grained <strong>change propagation control</strong></li>
+<li>Configurable <strong>caching strategies</strong></li>
+</ul>
+<h3 id="🛡️-Safety-Guarantees"><a href="#🛡️-Safety-Guarantees" class="headerlink" title="🛡️ Safety Guarantees"></a>🛡️ Safety Guarantees</h3><ul>
+<li>Compile-time <strong>type checking</strong> with C++20 concepts</li>
+<li>Safe <strong>value semantics</strong> throughout the framework</li>
+<li>Framework manages object lifetime internally</li>
+</ul>
+<h3 id="🧩-Extensible-Design"><a href="#🧩-Extensible-Design" class="headerlink" title="🧩 Extensible Design"></a>🧩 Extensible Design</h3><table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Options</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Trigger Policy</td>
+<td>ValueChange, Threshold, Timer, Custom</td>
+</tr>
+<tr>
+<td>Invalidation</td>
+<td>Direct, KeepCalculate, LastValue</td>
+</tr>
+</tbody></table>
+<h3 id="📦-Requirements"><a href="#📦-Requirements" class="headerlink" title="📦 Requirements"></a>📦 Requirements</h3><ul>
+<li><strong>Compiler</strong>: C++20 compatible (GCC 10+, Clang 12+, MSVC 19.30+)</li>
+<li><strong>Build System</strong>: CMake 3.15+</li>
+</ul>
+<h2 id="🛠-Installation"><a href="#🛠-Installation" class="headerlink" title="🛠 Installation"></a>🛠 Installation</h2><p>To build and install the <code>reaction</code> reactive framework, follow the steps below:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/lumia431/reaction.git &amp;&amp; <span class="built_in">cd</span> reaction</span><br><span class="line">cmake -B build</span><br><span class="line">cmake --build build/</span><br><span class="line">cmake --install build/ --prefix /your/install/path</span><br></pre></td></tr></table></figure>
 
-    //- ad
-    if theme.ad && theme.ad.post
-      .ads-wrap!=theme.ad.post
+<p>After installation, you can include and link against reaction in your own CMake-based project:</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">find_package</span>(reaction REQUIRED)</span><br><span class="line"><span class="keyword">target_link_libraries</span>(your_target PRIVATE reaction)</span><br></pre></td></tr></table></figure>
 
-    if theme.post_pagination
-      include includes/pagination.pug
-    if theme.related_post && theme.related_post.enable
-      != related_posts(page,site.posts)
+<h3 id="🚀-Quick-Start"><a href="#🚀-Quick-Start" class="headerlink" title="🚀 Quick Start"></a>🚀 Quick Start</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;reaction/reaction.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iomanip&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cmath&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">using</span> <span class="keyword">namespace</span> reaction;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1. Reactive variables for stock prices</span></span><br><span class="line">    <span class="keyword">auto</span> buyPrice = <span class="built_in">var</span>(<span class="number">100.0</span>);      <span class="comment">// Price at which stock was bought</span></span><br><span class="line">    <span class="keyword">auto</span> currentPrice = <span class="built_in">var</span>(<span class="number">105.0</span>);  <span class="comment">// Current market price</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. Use &#x27;calc&#x27; to compute profit or loss amount</span></span><br><span class="line">    <span class="keyword">auto</span> profit = <span class="built_in">calc</span>([&amp;]() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">currentPrice</span>() - <span class="built_in">buyPrice</span>();</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. Use &#x27;expr&#x27; to compute percentage gain/loss</span></span><br><span class="line">    <span class="keyword">auto</span> profitPercent = <span class="built_in">expr</span>(std::<span class="built_in">abs</span>(currentPrice - buyPrice) / buyPrice * <span class="number">100</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 4. Use &#x27;action&#x27; to print the log whenever values change</span></span><br><span class="line">    <span class="keyword">auto</span> logger = <span class="built_in">action</span>([&amp;]() &#123;</span><br><span class="line">        std::cout &lt;&lt; std::fixed &lt;&lt; std::<span class="built_in">setprecision</span>(<span class="number">2</span>);</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;[Stock Update] Current Price: $&quot;</span> &lt;&lt; <span class="built_in">currentPrice</span>()</span><br><span class="line">                  &lt;&lt; <span class="string">&quot;, Profit: $&quot;</span> &lt;&lt; <span class="built_in">profit</span>()</span><br><span class="line">                  &lt;&lt; <span class="string">&quot; (&quot;</span> &lt;&lt; <span class="built_in">profitPercent</span>() &lt;&lt; <span class="string">&quot;%)&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Simulate price changes</span></span><br><span class="line">    currentPrice.<span class="built_in">value</span>(<span class="number">110.0</span>).<span class="built_in">value</span>(<span class="number">95.0</span>);  <span class="comment">// Stock price increases</span></span><br><span class="line">    *buyPrice = <span class="number">90.0</span>;                       <span class="comment">// Buy price adjusted</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    if page.comments !== false && theme.comments.use
-      - var commentsJsLoad = true
-      !=partial('includes/third-party/comments/index', {}, {cache: true})
+<h3 id="📖-Basic-Usage"><a href="#📖-Basic-Usage" class="headerlink" title="📖 Basic Usage"></a>📖 Basic Usage</h3><h4 id="1-Reactive-Variables-var"><a href="#1-Reactive-Variables-var" class="headerlink" title="1. Reactive Variables: var"></a>1. Reactive Variables: <code>var</code></h4><p>Define reactive state variables with <code>var&lt;T&gt;</code>.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);         <span class="comment">// int variable</span></span><br><span class="line"><span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">3.14</span>);      <span class="comment">// double variable</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Method-style get value:</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> val = a.<span class="built_in">get</span>();</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>brief way:</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> val = <span class="built_in">a</span>();</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Method-style assignment:</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a.<span class="built_in">value</span>(<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Pointer-style assignment:</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*a = <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-Derived-Computation-calc"><a href="#2-Derived-Computation-calc" class="headerlink" title="2. Derived Computation: calc"></a>2. Derived Computation: calc</h4><p>Use <strong>calc</strong> to create reactive computations based on one or more var instances.</p>
+<ul>
+<li>Lambda Capture Style:</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">3.14</span>);</span><br><span class="line"><span class="keyword">auto</span> sum = reaction::<span class="built_in">calc</span>([=]() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="built_in">b</span>();  <span class="comment">// Retrieve current values using a() and b()</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Parameter Binding Style (High Performance):</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([](<span class="keyword">auto</span> aa, <span class="keyword">auto</span> bb) &#123;</span><br><span class="line">    <span class="keyword">return</span> std::<span class="built_in">to_string</span>(aa) + std::<span class="built_in">to_string</span>(bb);</span><br><span class="line">&#125;, a, b);  <span class="comment">// Dependencies: a and b</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-Declarative-Expression-expr"><a href="#3-Declarative-Expression-expr" class="headerlink" title="3. Declarative Expression: expr"></a>3. Declarative Expression: expr</h4><p>expr provides a clean and concise syntax to declare reactive expressions. The result automatically updates when any dependent variable changes.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>);</span><br><span class="line"><span class="keyword">auto</span> result = reaction::<span class="built_in">expr</span>(a + b * <span class="number">3</span>);  <span class="comment">// result updates automatically when &#x27;a&#x27; or &#x27;b&#x27; change</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="4-Reactive-Side-Effects-action"><a href="#4-Reactive-Side-Effects-action" class="headerlink" title="4. Reactive Side Effects: action"></a>4. Reactive Side Effects: action</h4><p>Register actions to perform side effects whenever the observed variables change.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> val = <span class="number">10</span>;</span><br><span class="line"><span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">auto</span> dds = reaction::<span class="built_in">action</span>([&amp;val]() &#123;</span><br><span class="line">    val = <span class="built_in">a</span>();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>Ofcourse, to get high performance can use Parameter Binding Style.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> val = <span class="number">10</span>;</span><br><span class="line"><span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">auto</span> dds = reaction::<span class="built_in">action</span>([&amp;val](<span class="keyword">auto</span> aa) &#123;</span><br><span class="line">    val = aa;</span><br><span class="line">&#125;, a);</span><br></pre></td></tr></table></figure>
+
+<h4 id="5-Reactive-Struct-Fields-Field"><a href="#5-Reactive-Struct-Fields-Field" class="headerlink" title="5. Reactive Struct Fields: Field"></a>5. Reactive Struct Fields: <code>Field</code></h4><p>For complex types with reactive fields allow you to define struct-like variables whose members are individually reactive.</p>
+<p>Here’s an example of a <code>PersonField</code> class:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">PersonField</span> : <span class="keyword">public</span> reaction::FieldBase &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">PersonField</span>(std::string name, <span class="type">int</span> age):</span><br><span class="line">        <span class="built_in">m_name</span>(reaction::<span class="built_in">field</span>(<span class="keyword">this</span>, name)),</span><br><span class="line">        <span class="built_in">m_age</span>(reaction::<span class="built_in">field</span>(<span class="keyword">this</span>, age))&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">std::string <span class="title">getName</span><span class="params">()</span> <span class="type">const</span> </span>&#123; <span class="keyword">return</span> m_name.<span class="built_in">get</span>(); &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">setName</span><span class="params">(<span class="type">const</span> std::string &amp;name)</span> </span>&#123; *m_name = name; &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">getAge</span><span class="params">()</span> <span class="type">const</span> </span>&#123; <span class="keyword">return</span> m_age.<span class="built_in">get</span>(); &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">setAge</span><span class="params">(<span class="type">int</span> age)</span> </span>&#123; *m_age = age; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    reaction::Field&lt;std::string&gt; m_name;</span><br><span class="line">    reaction::Field&lt;<span class="type">int</span>&gt; m_age;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> p = reaction::<span class="built_in">var</span>(PersonField&#123;<span class="string">&quot;Jack&quot;</span>, <span class="number">18</span>&#125;);</span><br><span class="line"><span class="keyword">auto</span> action = reaction::<span class="built_in">action</span>(</span><br><span class="line">    []() &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;Action Trigger , name = &quot;</span> &lt;&lt; <span class="built_in">p</span>().<span class="built_in">getName</span>() &lt;&lt; <span class="string">&quot; age = &quot;</span> &lt;&lt; <span class="built_in">p</span>().<span class="built_in">getAge</span>() &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">p-&gt;<span class="built_in">setName</span>(<span class="string">&quot;Jackson&quot;</span>); <span class="comment">// Action Trigger</span></span><br><span class="line">p-&gt;<span class="built_in">setAge</span>(<span class="number">28</span>);         <span class="comment">// Action Trigger</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="6-Copy-and-move-semantics-support"><a href="#6-Copy-and-move-semantics-support" class="headerlink" title="6. Copy and move semantics support"></a>6. Copy and move semantics support</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">3.14</span>);</span><br><span class="line"><span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>() + <span class="built_in">b</span>(); &#125;);</span><br><span class="line"><span class="keyword">auto</span> ds_copy = ds;</span><br><span class="line"><span class="keyword">auto</span> ds_move = std::<span class="built_in">move</span>(ds);</span><br><span class="line"><span class="built_in">EXPECT_FALSE</span>(<span class="built_in">static_cast</span>&lt;<span class="type">bool</span>&gt;(ds));</span><br></pre></td></tr></table></figure>
+
+<h4 id="7-Resetting-Nodes-and-Dependencies"><a href="#7-Resetting-Nodes-and-Dependencies" class="headerlink" title="7. Resetting Nodes and Dependencies"></a>7. Resetting Nodes and Dependencies</h4><p>The reaction framework allows you to <strong>reset a computation node</strong> by replacing its computation function.<br>This mechanism is useful when the result needs to be recalculated using a different logic or different dependencies after the node has been initially created.</p>
+<p><code>Note:</code> <strong>The return value type cannot be changed</strong></p>
+<p>Below is an example that demonstrates the reset functionality:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">TEST</span>(TestReset, ReactionTest) &#123;</span><br><span class="line">    <span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(std::string&#123;<span class="string">&quot;2&quot;</span>&#125;);</span><br><span class="line">    <span class="keyword">auto</span> ds = reaction::<span class="built_in">calc</span>([]() &#123; <span class="keyword">return</span> std::<span class="built_in">to_string</span>(<span class="built_in">a</span>()); &#125;);</span><br><span class="line">    <span class="keyword">auto</span> ret = ds.<span class="built_in">set</span>([=]() &#123; <span class="keyword">return</span> <span class="built_in">b</span>() + <span class="string">&quot;set&quot;</span>; &#125;);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ret, reaction::ReactionError::NoErr);</span><br><span class="line"></span><br><span class="line">    ret = ds.<span class="built_in">set</span>([=]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>(); &#125;);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ret, reaction::ReactionError::ReturnTypeErr);</span><br><span class="line"></span><br><span class="line">    ret = ds.<span class="built_in">set</span>([=]() &#123; <span class="keyword">return</span> <span class="built_in">ds</span>(); &#125;);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(ret, reaction::ReactionError::CycleDepErr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="8-Trigger-Mode"><a href="#8-Trigger-Mode" class="headerlink" title="8. Trigger Mode"></a>8. Trigger Mode</h4><p>The <code>reaction</code> framework supports various triggering mode to control when reactive computations are re-evaluated. This example demonstrates three mode:</p>
+<ol>
+<li><strong>Value Change Trigger:</strong> The reactive computation is triggered only when the underlying value actually changes.</li>
+<li><strong>Threshold Trigger:</strong> The reactive computation is triggered when the value crosses a specified threshold.</li>
+<li><strong>Always Trigger:</strong> (Not explicitly shown in this example) Always triggers regardless of whether the value has changed.</li>
+</ol>
+<p>The trigger Mode can be specified by the type parameter</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> reaction;</span><br><span class="line"><span class="keyword">auto</span> stockPrice = <span class="built_in">var</span>(<span class="number">100.0</span>);</span><br><span class="line"><span class="keyword">auto</span> profit = <span class="built_in">expr</span>&lt;ChangedTrigger&gt;(<span class="built_in">stockPrice</span>() - <span class="number">100.0</span>);</span><br><span class="line"><span class="keyword">auto</span> assignAction = <span class="built_in">action</span>([=]() &#123;  <span class="comment">// defalut AlwaysTrigger</span></span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Checky assign, price = &quot;</span> &lt;&lt; <span class="built_in">stockPrice</span>() &lt;&lt;<span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">auto</span> sellAction = <span class="built_in">action</span>&lt;ThresholdTrigger&gt;([=]() &#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;It&#x27;s time to sell, profit = &quot;</span> &lt;&lt; <span class="built_in">profit</span>() &lt;&lt;<span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;);</span><br><span class="line">sellAction.<span class="built_in">setThreshold</span>([=]() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">profit</span>() &gt; <span class="number">5.0</span>;</span><br><span class="line">&#125;);</span><br><span class="line">*stockPrice = <span class="number">100.0</span>; <span class="comment">// assignAction trigger</span></span><br><span class="line">*stockPrice = <span class="number">101.0</span>; <span class="comment">// assignAction, profit trigger</span></span><br><span class="line">*stockPrice = <span class="number">106.0</span>; <span class="comment">// all trigger</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>You can even define a trigger mode yourself in your code, just include the <strong>checkTrigger</strong> method:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">MyTrigger</span> &#123;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">checkTrigger</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// do something</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">auto</span> a = <span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">auto</span> b = <span class="built_in">expr</span>&lt;MyTrigger&gt;(a + <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="9-Invalid-Strategies"><a href="#9-Invalid-Strategies" class="headerlink" title="9. Invalid Strategies"></a>9. Invalid Strategies</h4><p>In the <code>reaction</code> framework, all data sources <strong>obtained by users are actually in the form of weak references</strong>, and their actual memory is managed <strong>in the observer map</strong>.<br>Users can manually call the <strong>close</strong> method, so that all dependent data sources will also be closed.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> a = reaction::<span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">auto</span> b = reaction::<span class="built_in">var</span>(<span class="number">2</span>);</span><br><span class="line"><span class="keyword">auto</span> dsA = reaction::<span class="built_in">calc</span>([=]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>(); &#125;);</span><br><span class="line"><span class="keyword">auto</span> dsB = reaction::<span class="built_in">calc</span>([=]() &#123; <span class="keyword">return</span> <span class="built_in">dsA</span>() + <span class="built_in">b</span>(); &#125;);</span><br><span class="line">dsA.<span class="built_in">close</span>(); <span class="comment">//dsB will automatically close, cause dsB dependents dsA.</span></span><br><span class="line"><span class="built_in">EXPECT_FALSE</span>(<span class="built_in">static_cast</span>&lt;<span class="type">bool</span>&gt;(dsA));</span><br><span class="line"><span class="built_in">EXPECT_FALSE</span>(<span class="built_in">static_cast</span>&lt;<span class="type">bool</span>&gt;(dsB));</span><br></pre></td></tr></table></figure>
+
+<p>However, for scenarios where the lifecycle of a weak reference acquired by user ends, the <code>reaction</code> framework makes several strategy for different scenarios.</p>
+<ul>
+<li><p><strong>DirectCloseStrategy:</strong><br>The node is immediately closed (made invalid) when any of its dependencies become invalid.</p>
+</li>
+<li><p><strong>KeepCalcStrategy:</strong><br>The node continues to recalculate, its dependencies work normally.</p>
+</li>
+<li><p><strong>LastValStrategy:</strong><br>The node retains the last valid, its dependencies use the value to calculate.</p>
+</li>
+</ul>
+<p>Below is a concise example that illustrates all three strategies:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="keyword">auto</span> a = <span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = <span class="built_in">calc</span>([]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>(); &#125;);</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">auto</span> temp = <span class="built_in">calc</span>([]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>(); &#125;); <span class="comment">// default is DirectCloseStrategy</span></span><br><span class="line">        b.<span class="built_in">set</span>([]() &#123; <span class="keyword">return</span> <span class="built_in">temp</span>(); &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// temp lifecycle ends, b will end too.</span></span><br><span class="line">    <span class="built_in">EXPECT_FALSE</span>(<span class="built_in">static_cast</span>&lt;<span class="type">bool</span>&gt;(b));</span><br><span class="line">&#125;</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">auto</span> a = <span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = <span class="built_in">calc</span>([]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>(); &#125;);</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">auto</span> temp = <span class="built_in">calc</span>&lt;AlwaysTrigger, KeepCalcStrategy&gt;([]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>(); &#125;); <span class="comment">// default is DirectFailureStrategy</span></span><br><span class="line">        b.<span class="built_in">set</span>([]() &#123; <span class="keyword">return</span> <span class="built_in">temp</span>(); &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// temp lifecycle ends, b not be influenced.</span></span><br><span class="line">    <span class="built_in">EXPECT_TRUE</span>(<span class="built_in">static_cast</span>&lt;<span class="type">bool</span>&gt;(b));</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(b.<span class="built_in">get</span>(), <span class="number">1</span>);</span><br><span class="line">    a.<span class="built_in">value</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(b.<span class="built_in">get</span>(), <span class="number">2</span>);</span><br><span class="line">&#125;</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">auto</span> a = <span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> b = <span class="built_in">calc</span>([]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>(); &#125;);</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">auto</span> temp = <span class="built_in">calc</span>&lt;AlwaysTrigger, LastValStrategy&gt;([]() &#123; <span class="keyword">return</span> <span class="built_in">a</span>(); &#125;); <span class="comment">// default is DirectFailureStrategy</span></span><br><span class="line">        b.<span class="built_in">set</span>([]() &#123; <span class="keyword">return</span> <span class="built_in">temp</span>(); &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// temp lifecycle ends, b use its last val to calculate.</span></span><br><span class="line">    <span class="built_in">EXPECT_TRUE</span>(<span class="built_in">static_cast</span>&lt;<span class="type">bool</span>&gt;(b));</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(b.<span class="built_in">get</span>(), <span class="number">1</span>);</span><br><span class="line">    a.<span class="built_in">value</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="built_in">EXPECT_EQ</span>(b.<span class="built_in">get</span>(), <span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Likewise, you can define a strategy yourself in your code, just include the <strong>handleInvalid</strong> method:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">MyStrategy</span> &#123;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">handleInvalid</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;Invalid&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">auto</span> a = <span class="built_in">var</span>(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">auto</span> b = <span class="built_in">expr</span>&lt;AlwaysTrigger, MyStrategy&gt;(a + <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-总结与展望"><a href="#5-总结与展望" class="headerlink" title="5. 总结与展望"></a>5. 总结与展望</h2><p>响应式编程正加速向全栈渗透，而 C++ 在此领域尚属“荒原”。Reaction 框架希望借助 C++20 的强大能力，为 C++ 开发者提供一种全新的响应式思维模型，特别是在嵌入式界面、工业软件与复杂状态管理等高性能场景中，具备独特的优势。</p>
+<p><strong>接下来的章节，我们将从零开始实现 Reaction 框架，逐步剖析其设计细节与核心实现逻辑。</strong></p>
+<p>欢迎关注后续内容，一起走进响应式 C++ 的世界！</p>
+<hr>
+<p><em>如果你对本项目感兴趣，欢迎留言交流，或访问 GitHub 获取源码与进展！</em><br><a target="_blank" rel="noopener" href="https://github.com/lumia431/reaction">https://github.com/lumia431/reaction</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">Lummy</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/04/12/Reaction%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D/">http://example.com/2025/04/12/Reaction%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Reactive-programming/">Reactive-programming</a><a class="post-meta__tags" href="/tags/C/">C++</a><a class="post-meta__tags" href="/tags/Modern-Cpp/">Modern-Cpp</a><a class="post-meta__tags" href="/tags/TMP/">TMP</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2025/04/12/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E8%AE%A9%E4%BB%A3%E7%A0%81%E8%B7%91%E8%B5%B7%E6%9D%A5%EF%BC%81%E6%9E%84%E5%BB%BA%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E7%9A%84%E8%B5%B7%E7%82%B9/" title="第一章：让代码跑起来！构建响应式框架的起点"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">第一章：让代码跑起来！构建响应式框架的起点</div></div><div class="info-2"><div class="info-item-1">第一章：让代码跑起来！构建响应式框架的起点在本章中，我们将从零开始搭建 Reaction 响应式框架的基本工程结构，并实现几个关键的核心组件：DataSource、Expression 和 Resource。这些组件将构成我们响应式框架的计算骨架。 我们的目标是让如下代码成功编译并通过测试： 12345678910auto a = reaction::var(1);auto b = reaction::var(3.14);EXPECT_EQ(a.get(), 1);EXPECT_EQ(b.get(), 3.14);auto ds = reaction::calc([](int aa, double bb) &#123; return aa + bb; &#125;, a, b);auto dds = reaction::calc([](auto aa, auto dsds) &#123; return std::to_string(aa) + std::to_string(dsds); &#125;, a, ds);ASSERT_FLOAT_EQ(ds.get(), 4.14);...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/04/12/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E8%AE%A9%E4%BB%A3%E7%A0%81%E8%B7%91%E8%B5%B7%E6%9D%A5%EF%BC%81%E6%9E%84%E5%BB%BA%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E7%9A%84%E8%B5%B7%E7%82%B9/" title="第一章：让代码跑起来！构建响应式框架的起点"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-04-12</div><div class="info-item-2">第一章：让代码跑起来！构建响应式框架的起点</div></div><div class="info-2"><div class="info-item-1">第一章：让代码跑起来！构建响应式框架的起点在本章中，我们将从零开始搭建 Reaction 响应式框架的基本工程结构，并实现几个关键的核心组件：DataSource、Expression 和 Resource。这些组件将构成我们响应式框架的计算骨架。 我们的目标是让如下代码成功编译并通过测试： 12345678910auto a = reaction::var(1);auto b = reaction::var(3.14);EXPECT_EQ(a.get(), 1);EXPECT_EQ(b.get(), 3.14);auto ds = reaction::calc([](int aa, double bb) &#123; return aa + bb; &#125;, a, b);auto dds = reaction::calc([](auto aa, auto dsds) &#123; return std::to_string(aa) + std::to_string(dsds); &#125;, a, ds);ASSERT_FLOAT_EQ(ds.get(), 4.14);...</div></div></div></a><a class="pagination-related" href="/2025/05/13/%E7%AC%AC%E4%B8%83%E7%AB%A0%EF%BC%9A%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A8%A1%E6%9D%BF%E7%9A%84%E4%BD%BF%E7%94%A8/" title="第七章：表达式模板的使用"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-13</div><div class="info-item-2">第七章：表达式模板的使用</div></div><div class="info-2"><div class="info-item-1">第七章：表达式模板的使用在实现表达式模板之前，我们先做一些准备工作。 首先实现action之间的依赖，一个action可以触发其他的action： 123456789101112131415161718TEST(ReactionTest, TestAction)&#123;    auto a = reaction::var(1);    auto b = reaction::var(3.14);    auto at = reaction::action([](int aa, double bb)                               &#123; std::cout &lt;&lt; &quot;a = &quot; &lt;&lt; aa &lt;&lt; &#x27;\t&#x27; &lt;&lt; &quot;b = &quot; &lt;&lt; bb &lt;&lt; &#x27;\t&#x27;; &#125;, a, b);    bool trigger = false;    auto att = reaction::action([...</div></div></div></a><a class="pagination-related" href="/2025/05/07/%E7%AC%AC%E4%B8%89%E7%AB%A0%EF%BC%9A%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E6%BA%90%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%AE%A1%E7%90%86/" title="第三章：实现数据源的生命周期管理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-07</div><div class="info-item-2">第三章：实现数据源的生命周期管理</div></div><div class="info-2"><div class="info-item-1">第三章：实现数据源的生命周期管理设计目标回顾在前两章中，我们已经建立了Reaction框架的基础结构，本章将重点解决以下问题：  实现数据源的拷贝和移动语义 使用智能指针和引用计数管理内存 确保用户只持有弱引用，强引用由ObserverGraph统一管理  核心设计：桥接模式与智能指针管理1. 桥接模式的应用桥接模式（Bridge Pattern）是面向对象设计中的经典模式，其核心思想是将抽象（Abstraction）与实现（Implementation）分离，使二者可以独立变化。这种分离通过组合（Composition）而非继承（Inheritance）实现，是”组合优于继承”原则的典型体现。 在Reaction框架中，我们通过以下结构实现桥接模式： 123456template &lt;typename ReactType&gt;class React &#123; /* 抽象接口层 */ &#125;;template &lt;typename TriggerPolicy, typename InvalidStrategy, typename Type, typename....</div></div></div></a><a class="pagination-related" href="/2025/05/28/%E7%AC%AC%E4%B9%9D%E7%AB%A0%EF%BC%9A%E8%A7%A6%E5%8F%91%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="第九章：触发模式的实现"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-28</div><div class="info-item-2">第九章：触发模式的实现</div></div><div class="info-2"><div class="info-item-1">123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109TEST(ReactionTest, TestChangeTrig) &#123;    auto a = reaction::var(1);    auto b = reaction::var(2);    auto c = reaction::var(3);    int triggerCountA = 0;    int triggerCountB = 0;    auto ds = reaction::calc&lt;reaction::AlwaysTrig&gt;([&amp;triggerCountA](int aa, double bb...</div></div></div></a><a class="pagination-related" href="/2025/04/23/%E7%AC%AC%E4%BA%8C%E7%AB%A0%EF%BC%9A%E8%AE%A9%E6%95%B0%E6%8D%AE%E6%B5%81%E8%B5%B7%E6%9D%A5%EF%BC%81%E4%BE%9D%E8%B5%96%E8%8A%82%E7%82%B9%E7%AE%A1%E7%90%86%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="第二章：让数据流起来！依赖节点管理的实现"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-04-23</div><div class="info-item-2">第二章：让数据流起来！依赖节点管理的实现</div></div><div class="info-2"><div class="info-item-1">第二章：让数据流起来！依赖节点管理的实现在本章中，我们将实现 ObserverNode 和 ObserverGraph，从而能够正确传播数据源的调用链。 我们的目标是让如下代码成功编译并通过测试： 12345678910111213141516TEST(ReactionTest, TestCommonUse) &#123;    auto a = reaction::var(1);    auto b = reaction::var(3.14);    EXPECT_EQ(a.get(), 1);    EXPECT_EQ(b.get(), 3.14);    auto ds = reaction::calc([](int aa, double bb) &#123; return aa + bb; &#125;, a, b);    auto dds = reaction::calc([](auto aa, auto dsds) &#123; return std::to_string(aa) + std::to_string(dsds); &#125;, a, ds);    ...</div></div></div></a><a class="pagination-related" href="/2025/05/27/%E7%AC%AC%E5%85%AB%E7%AB%A0%EF%BC%9A%E8%8A%82%E7%82%B9%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="第八章：节点关系图的实现"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-27</div><div class="info-item-2">第八章：节点关系图的实现</div></div><div class="info-2"><div class="info-item-1">第八章：节点关系图的实现1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677TEST(ReactionTest, TestSelfDependency) &#123;    auto a = reaction::var(1);    auto dsA = reaction::calc([](int aa) &#123; return aa; &#125;, a);    EXPECT_THROW(dsA.reset([&amp;]() &#123; return a() + dsA(); &#125;), std::runtime_error);&#125;TEST(ReactionTest, TestCycleDependency) &#123;    auto a = reaction::var(1);    auto b = reactio...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Lummy</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%B5%B0%E8%BF%9B%E5%93%8D%E5%BA%94%E5%BC%8F%E7%BC%96%E7%A8%8B%EF%BC%9A%E4%BB%8E%E7%90%86%E5%BF%B5%E5%88%B0-C-20-%E5%AE%9E%E7%8E%B0-%E2%80%94%E2%80%94-Reaction-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">走进响应式编程：从理念到 C++20 实现 —— Reaction 响应式框架介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%AF-%E6%9C%AC%E6%95%99%E7%A8%8B%E9%9D%A2%E5%90%91%E8%B0%81%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">🎯 本教程面向谁？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%93%8D%E5%BA%94%E5%BC%8F%E7%BC%96%E7%A8%8B%EF%BC%9F"><span class="toc-number">1.2.</span> <span class="toc-text">1. 什么是响应式编程？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.1 基本概念</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B8%BB%E6%B5%81%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90"><span class="toc-number">1.3.</span> <span class="toc-text">2. 主流响应式框架对比分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-JavaScript-TypeScript-%E7%94%9F%E6%80%81"><span class="toc-number">1.3.1.</span> <span class="toc-text">2.1 JavaScript &#x2F; TypeScript 生态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Java-%E7%94%9F%E6%80%81"><span class="toc-number">1.3.2.</span> <span class="toc-text">2.2 Java 生态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-C-%E7%94%9F%E6%80%81"><span class="toc-number">1.3.3.</span> <span class="toc-text">2.3 C# 生态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-C-%E7%94%9F%E6%80%81"><span class="toc-number">1.3.4.</span> <span class="toc-text">2.4 C++ 生态</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%89%E6%8B%A9-C-20-%E6%9D%A5%E5%AE%9E%E7%8E%B0%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%EF%BC%9F"><span class="toc-number">1.4.</span> <span class="toc-text">3. 为什么选择 C++20 来实现响应式框架？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Reaction-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6-%E2%80%94%E2%80%94-%E8%AE%BE%E8%AE%A1%E7%90%86%E5%BF%B5%E4%B8%8E%E7%BB%93%E6%9E%84"><span class="toc-number">1.5.</span> <span class="toc-text">4. Reaction 响应式框架 —— 设计理念与结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8E%AF-Focused-on-UI-Dataflow-Management"><span class="toc-number">1.5.1.</span> <span class="toc-text">🎯 Focused on UI Dataflow Management</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Ideal-For"><span class="toc-number">1.5.1.1.</span> <span class="toc-text">Ideal For:</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9A%80-Performance-Optimized"><span class="toc-number">1.5.2.</span> <span class="toc-text">🚀 Performance Optimized</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%97-Intelligent-Dependency-Management"><span class="toc-number">1.5.3.</span> <span class="toc-text">🔗 Intelligent Dependency Management</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9B%A1%EF%B8%8F-Safety-Guarantees"><span class="toc-number">1.5.4.</span> <span class="toc-text">🛡️ Safety Guarantees</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%A9-Extensible-Design"><span class="toc-number">1.5.5.</span> <span class="toc-text">🧩 Extensible Design</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%A6-Requirements"><span class="toc-number">1.5.6.</span> <span class="toc-text">📦 Requirements</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0-Installation"><span class="toc-number">1.6.</span> <span class="toc-text">🛠 Installation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9A%80-Quick-Start"><span class="toc-number">1.6.1.</span> <span class="toc-text">🚀 Quick Start</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%96-Basic-Usage"><span class="toc-number">1.6.2.</span> <span class="toc-text">📖 Basic Usage</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-Reactive-Variables-var"><span class="toc-number">1.6.2.1.</span> <span class="toc-text">1. Reactive Variables: var</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-Derived-Computation-calc"><span class="toc-number">1.6.2.2.</span> <span class="toc-text">2. Derived Computation: calc</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-Declarative-Expression-expr"><span class="toc-number">1.6.2.3.</span> <span class="toc-text">3. Declarative Expression: expr</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-Reactive-Side-Effects-action"><span class="toc-number">1.6.2.4.</span> <span class="toc-text">4. Reactive Side Effects: action</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-Reactive-Struct-Fields-Field"><span class="toc-number">1.6.2.5.</span> <span class="toc-text">5. Reactive Struct Fields: Field</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-Copy-and-move-semantics-support"><span class="toc-number">1.6.2.6.</span> <span class="toc-text">6. Copy and move semantics support</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-Resetting-Nodes-and-Dependencies"><span class="toc-number">1.6.2.7.</span> <span class="toc-text">7. Resetting Nodes and Dependencies</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-Trigger-Mode"><span class="toc-number">1.6.2.8.</span> <span class="toc-text">8. Trigger Mode</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#9-Invalid-Strategies"><span class="toc-number">1.6.2.9.</span> <span class="toc-text">9. Invalid Strategies</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E6%80%BB%E7%BB%93%E4%B8%8E%E5%B1%95%E6%9C%9B"><span class="toc-number">1.7.</span> <span class="toc-text">5. 总结与展望</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/05/28/%E7%AC%AC%E4%B9%9D%E7%AB%A0%EF%BC%9A%E8%A7%A6%E5%8F%91%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="第九章：触发模式的实现">第九章：触发模式的实现</a><time datetime="2025-05-28T09:37:15.364Z" title="Created 2025-05-28 17:37:15">2025-05-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/05/27/%E7%AC%AC%E5%85%AB%E7%AB%A0%EF%BC%9A%E8%8A%82%E7%82%B9%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="第八章：节点关系图的实现">第八章：节点关系图的实现</a><time datetime="2025-05-27T08:24:17.383Z" title="Created 2025-05-27 16:24:17">2025-05-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/05/13/%E7%AC%AC%E4%B8%83%E7%AB%A0%EF%BC%9A%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%A8%A1%E6%9D%BF%E7%9A%84%E4%BD%BF%E7%94%A8/" title="第七章：表达式模板的使用">第七章：表达式模板的使用</a><time datetime="2025-05-13T06:40:30.277Z" title="Created 2025-05-13 14:40:30">2025-05-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/05/09/%E7%AC%AC%E5%85%AD%E7%AB%A0%EF%BC%9A%E7%BC%96%E8%AF%91%E6%9C%9F%E5%8F%8D%E5%B0%84private%E6%88%90%E5%91%98/" title="第六章：编译期反射 private 成员">第六章：编译期反射 private 成员</a><time datetime="2025-05-09T09:02:28.358Z" title="Created 2025-05-09 17:02:28">2025-05-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/05/09/%E7%AC%AC%E4%BA%94%E7%AB%A0%EF%BC%9A%E7%BC%96%E8%AF%91%E6%9C%9F%E5%8F%8D%E5%B0%84%E5%88%9D%E6%8E%A2%EF%BC%81%EF%BC%81/" title="第五章：编译期反射初探！">第五章：编译期反射初探！</a><time datetime="2025-05-09T05:21:27.878Z" title="Created 2025-05-09 13:21:27">2025-05-09</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;2025 By Lummy</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.2</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
