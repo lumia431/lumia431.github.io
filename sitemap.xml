@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://example.com/2025/10/15/photon_infer1/</loc>
+    
+    <lastmod>2025-10-15</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://example.com/2025/08/28/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E8%AE%A9%E4%BB%A3%E7%A0%81%E8%B7%91%E8%B5%B7%E6%9D%A5%EF%BC%81%E6%9E%84%E5%BB%BA%E5%93%8D%E5%BA%94%E5%BC%8F%E6%A1%86%E6%9E%B6%E7%9A%84%E8%B5%B7%E7%82%B9/</loc>
     
     <lastmod>2025-08-28</lastmod>
@@ -94,7 +103,7 @@
 
   <url>
     <loc>http://example.com/</loc>
-    <lastmod>2025-08-28</lastmod>
+    <lastmod>2025-10-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -102,35 +111,42 @@
   
   <url>
     <loc>http://example.com/tags/Reactive-programming/</loc>
-    <lastmod>2025-08-28</lastmod>
+    <lastmod>2025-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>http://example.com/tags/C/</loc>
-    <lastmod>2025-08-28</lastmod>
+    <lastmod>2025-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>http://example.com/tags/Modern-Cpp/</loc>
-    <lastmod>2025-08-28</lastmod>
+    <lastmod>2025-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>http://example.com/tags/TMP/</loc>
-    <lastmod>2025-08-28</lastmod>
+    <lastmod>2025-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>http://example.com/tags/Reactive-programming-C-Modern-Cpp-TMP/</loc>
-    <lastmod>2025-08-28</lastmod>
+    <lastmod>2025-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://example.com/tags/PhotonInfer/</loc>
+    <lastmod>2025-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -139,7 +155,14 @@
   
   <url>
     <loc>http://example.com/categories/Reaction/</loc>
-    <lastmod>2025-08-28</lastmod>
+    <lastmod>2025-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://example.com/categories/PhotonInfer/</loc>
+    <lastmod>2025-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
